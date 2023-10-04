@@ -1,4 +1,9 @@
+from collections import namedtuple
+from typing import Dict
+
 from constants import GRID_SIZE
+
+Coord = namedtuple('coord', ['row', 'col'])
 
 
 class Board:
@@ -11,6 +16,8 @@ class Board:
             self.rows = rows
             self.rows = cols
             self.areas = areas
+
+        self.fixed_values: Dict[Coord, int] = {}
 
     def print(self):
         print("Rows: ")
