@@ -2,8 +2,8 @@ from collections import namedtuple
 from typing import Dict
 
 from constants import GRID_SIZE
-
-Coord = namedtuple('coord', ['row', 'col'])
+from objects.coordinate import Coord
+from utils.calculate_stuff import map_to_area_index
 
 
 class Board:
@@ -21,8 +21,21 @@ class Board:
     
     def print(self):
         print("Rows: ")
-        print(self.rows)
+        for row in self.rows:
+            print(f'{row}: {self.rows[row]}')
         print("Cols: ")
-        print(self.cols)
+        for col in self.cols:
+            print(f'{col}: {self.cols[col]}')
         print("Areas: ")
-        print(self.areas)
+        for area in self.areas:
+            print(f'{area}: {self.areas[area]}')
+        print("Fixed values: ")
+        for coord in self.fixed_values:
+            print(f'{coord}: {self.fixed_values[coord]}')
+
+    def add_value_by_coord(self, coord: Coord, value: int):
+        self.rows[coord.row][coord.col] = value
+        self.cols[coord.col][coord.row] = value
+        area_index, value_index = map_to_area_index(coord)
+        self.areas[area_index][value_index] = value
+        self.fixed_values[coord] = value
