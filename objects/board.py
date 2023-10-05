@@ -18,7 +18,7 @@ class Board:
             self.areas = areas
 
         self.fixed_values: Dict[Coord, int] = {}
-
+    
     def print(self):
         print("Rows: ")
         for row in self.rows:
