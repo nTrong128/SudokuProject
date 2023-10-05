@@ -1,2 +1,5 @@
+from objects.board import Board
+
 if __name__ == "__main__":
-    print('test')
+    board = Board()
+    board.print()
