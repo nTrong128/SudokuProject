@@ -16,8 +16,10 @@ class Board:
             self.rows = rows
             self.rows = cols
             self.areas = areas
+
         self.fitness_evaluation=0
-        self.fixed_values: Dict[int, int] = {}
+        self.fixed_values: Dict[Coord, int] = {}
+    
 
     def print(self):
         print("Rows: ")
