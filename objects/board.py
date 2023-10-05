@@ -33,12 +33,12 @@ class Board:
         for coord in self.fixed_values:
             print(f'{coord}: {self.fixed_values[coord]}')
 
-    # def add_value_by_coord(self, coord: Coord, value: int):
-    #     self.rows[coord.row][coord.col] = value
-    #     self.cols[coord.col][coord.row] = value
-    #     area_index, value_index = map_to_area_index(coord)
-    #     self.areas[area_index][value_index] = value
-    #     self.fixed_values[coord] = value
+    def add_value_by_coord(self, coord: Coord, value: int):
+        self.rows[coord.row][coord.col] = value
+        self.cols[coord.col][coord.row] = value
+        area_index, value_index = map_to_area_index(coord)
+        self.areas[area_index][value_index] = value
+        self.fixed_values[coord] = value
     def fitness(self):
         count_duplicate=lambda arr:len([x for x in arr if x!=0]) - len(set(x for x in arr if x!=0))
         for index in range(GRID_SIZE):
