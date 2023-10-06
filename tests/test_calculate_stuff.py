@@ -1,7 +1,7 @@
 import unittest
 
 from objects.coordinate import Coord
-from utils.calculate_stuff import get_area_by_coord, top_left_corner_coord, map_to_area_index
+from utils.calculate_stuff import get_area_by_coord, top_left_corner_coord, map_to_area_index, top_left_index_col, top_left_index_row
 
 
 class TestCalculateStuffFunctions(unittest.TestCase):
@@ -37,6 +37,28 @@ class TestCalculateStuffFunctions(unittest.TestCase):
         self.assertEqual(map_to_area_index(Coord(7, 2)), (6, 5))
         self.assertEqual(map_to_area_index(Coord(8, 5)), (7, 8))
         self.assertEqual(map_to_area_index(Coord(7, 8)), (8, 5))
+
+    def test_area_to_row_index(self):
+        self.assertEqual(top_left_index_row(0), 0)
+        self.assertEqual(top_left_index_row(1), 3)
+        self.assertEqual(top_left_index_row(2), 6)
+        self.assertEqual(top_left_index_row(3), 0)
+        self.assertEqual(top_left_index_row(4), 3)
+        self.assertEqual(top_left_index_row(5), 6)
+        self.assertEqual(top_left_index_row(6), 0)
+        self.assertEqual(top_left_index_row(7), 3)
+        self.assertEqual(top_left_index_row(8), 6)
+
+    def test_area_to_col_index(self):
+        self.assertEqual(top_left_index_col(0), 0)
+        self.assertEqual(top_left_index_col(1), 0)
+        self.assertEqual(top_left_index_col(2), 0)
+        self.assertEqual(top_left_index_col(3), 3)
+        self.assertEqual(top_left_index_col(4), 3)
+        self.assertEqual(top_left_index_col(5), 3)
+        self.assertEqual(top_left_index_col(6), 6)
+        self.assertEqual(top_left_index_col(7), 6)
+        self.assertEqual(top_left_index_col(8), 6)
 
 
 if __name__ == '__main__':
