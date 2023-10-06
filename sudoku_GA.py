@@ -1,8 +1,6 @@
-import random
-
+import random,copy
 from constants import GRID_SIZE
 from objects.board import Board
-
 
 def fillArea(sudoku_Board: Board) -> None:
 
@@ -36,3 +34,15 @@ def fillArea(sudoku_Board: Board) -> None:
             for j in range(top_left_index_Col, top_left_index_Col + 3):
                 sudoku_Board.cols[i][j] = sudoku_Board.areas[area][counter]
                 counter += 1
+
+def create_population(population_size:int, input_board:Board)-> list[Board]:
+    """
+    Creates a population of sudoku boards with random values
+    """
+    population = [Board() for _ in range(population_size)]
+    for i in range(population_size):
+        population[i].rows = copy.deepcopy(input_board.rows)
+        population[i].cols = copy.deepcopy(input_board.cols)
+        population[i].areas = copy.deepcopy(input_board.areas)
+        fillArea(population[i])
+    return population
