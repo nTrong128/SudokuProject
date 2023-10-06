@@ -35,4 +35,3 @@ def fillArea(sudoku_Board: Board) -> None:
             for j in range(top_left_index_Col, top_left_index_Col + 3):
                 sudoku_Board.cols[i][j] = sudoku_Board.areas[area][counter]
                 counter += 1
-

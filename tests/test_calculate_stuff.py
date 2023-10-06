@@ -1,8 +1,7 @@
 import unittest
 
 from objects.coordinate import Coord
-from utils.calculate_stuff import get_area_by_coord, top_left_corner_coord, map_to_area_index,top_left_index_col, top_left_index_row
-
+from utils.calculate_stuff import get_area_by_coord, top_left_corner_coord, map_to_area_index, top_left_index_col, top_left_index_row
 
 class TestCalculateStuffFunctions(unittest.TestCase):
     def test_get_area_by_coord(self):
@@ -59,6 +58,7 @@ class TestCalculateStuffFunctions(unittest.TestCase):
         self.assertEqual(top_left_index_col(6), 6)
         self.assertEqual(top_left_index_col(7), 6)
         self.assertEqual(top_left_index_col(8), 6)
+
 
 if __name__ == '__main__':
     unittest.main()
