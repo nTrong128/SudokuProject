@@ -17,7 +17,8 @@ def fill_areas(sudoku_Board: Board) -> None:
                 sudoku_Board.areas[area][cell] = value
                 number.remove(value)
 
-def fill_from_areas(sudoku_Board: Board)->None:
+
+def fill_area_to_rowcol(sudoku_Board: Board) -> None:
     for area in range(GRID_SIZE):
 
         top_left_index_Col = area * 3 // GRID_SIZE * 3
@@ -38,6 +39,9 @@ def fill_from_areas(sudoku_Board: Board)->None:
             for j in range(top_left_index_Col, top_left_index_Col + 3):
                 sudoku_Board.cols[i][j] = sudoku_Board.areas[area][counter]
                 counter += 1
+    sudoku_Board.fitness()
+
+
 def create_population(input_board: Board, population_size: int) -> list[Board]:
     """
     Creates a population of sudoku boards with random values
@@ -48,17 +52,37 @@ def create_population(input_board: Board, population_size: int) -> list[Board]:
         population[i].cols = copy.deepcopy(input_board.cols)
         population[i].areas = copy.deepcopy(input_board.areas)
         fill_areas(population[i])
-        fill_from_areas(population[i])
+        fill_area_to_rowcol(population[i])
     return population
 
-def create_child(population: list[Board])->(Board, int, int):
-    father_index:int = 0
-    mother_index :int = 0
-    while(father_index == mother_index):
-        father_index = random.randint(0, len(population))
-        mother_index = random.randint(0, len(population))
-    child_board = Board()
-    for i in range(GRID_SIZE):
-        child_board.areas[i] = copy.deepcopy(population[random.choice([father_index, mother_index])].areas[i])
-    fill_from_areas(child_board)
-    return child_board, father_index, mother_index
+
+def create_child(population: list[Board], population_size: int, children_size: int):
+    undiscovered_parent = [x for x in range(population_size)]
+    while len(undiscovered_parent) > 1:
+        father_index: int = 0
+        mother_index: int = 0
+        while father_index == mother_index:
+            father_index = random.choice(undiscovered_parent)
+            mother_index = random.choice(undiscovered_parent)
+        undiscovered_parent.remove(father_index)
+        undiscovered_parent.remove(mother_index)
+
+        for i in range(children_size):
+            child_board = Board()
+            for j in range(GRID_SIZE):
+                child_board.areas[j] = copy.deepcopy(population[random.choice([father_index, mother_index])].areas[j])
+            fill_area_to_rowcol(child_board)
+            population.append(child_board)
+            population_size += 1
+
+            if population[father_index].fitness_evaluation > child_board.fitness_evaluation:
+                population.pop(father_index)
+                population_size -= 1
+
+            if population[mother_index].fitness_evaluation > child_board.fitness_evaluation:
+                population.pop(mother_index)
+                population_size -= 1
+
+
+def sort_population(population: list[Board]):
+    return sorted(population, key=lambda x: x.fitness_evaluation, reverse=True)
