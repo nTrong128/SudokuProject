@@ -18,7 +18,7 @@ def fill_areas(sudoku_Board: Board) -> None:
                 number.remove(value)
 
 
-def fill_area_to_rowcol(sudoku_Board: Board) -> None:
+def map_area_values_to_rows_cols(sudoku_Board: Board) -> None:
     for area in range(GRID_SIZE):
 
         top_left_index_Col = area * 3 // GRID_SIZE * 3
@@ -52,11 +52,11 @@ def create_population(input_board: Board, population_size: int) -> list[Board]:
         population[i].cols = copy.deepcopy(input_board.cols)
         population[i].areas = copy.deepcopy(input_board.areas)
         fill_areas(population[i])
-        fill_area_to_rowcol(population[i])
+        map_area_values_to_rows_cols(population[i])
     return population
 
 
-def create_child(population: list[Board], population_size: int, children_size: int):
+def create_child(population: list[Board], children_size: int):
     population_size = len(population)
     undiscovered_parent = [x for x in range(population_size)]
     while len(undiscovered_parent) > 1:
@@ -72,7 +72,7 @@ def create_child(population: list[Board], population_size: int, children_size: i
             child_board = Board()
             for j in range(GRID_SIZE):
                 child_board.areas[j] = copy.deepcopy(population[random.choice([father_index, mother_index])].areas[j])
-            fill_area_to_rowcol(child_board)
+            map_area_values_to_rows_cols(child_board)
             population.append(child_board)
             population_size += 1
 
