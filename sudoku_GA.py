@@ -1,14 +1,16 @@
-import random,copy
+import copy
+import random
+
 from constants import GRID_SIZE
 from objects.board import Board
 
-def fillArea(sudoku_Board: Board) -> None:
 
+def fillArea(sudoku_Board: Board) -> None:
     """
     Fills the areas of the sudoku board with random values
     """
     for area in range(GRID_SIZE):
-        number = [x for x in range(1, GRID_SIZE+1) if x not in sudoku_Board.areas[area]]
+        number = [x for x in range(1, GRID_SIZE + 1) if x not in sudoku_Board.areas[area]]
         for cell in range(GRID_SIZE):
             if sudoku_Board.areas[area][cell] == 0:
                 value = random.choice(number)
@@ -35,7 +37,8 @@ def fillArea(sudoku_Board: Board) -> None:
                 sudoku_Board.cols[i][j] = sudoku_Board.areas[area][counter]
                 counter += 1
 
-def create_population(population_size:int, input_board:Board)-> list[Board]:
+
+def create_population(population_size: int, input_board: Board) -> list[Board]:
     """
     Creates a population of sudoku boards with random values
     """

@@ -8,4 +8,4 @@ if __name__ == "__main__":
 
 end_time = time.time()
 print("The time of execution of above program is :",
-      (end_time-start_time) * 10**3, "ms")
+      (end_time - start_time) * 10 ** 3, "ms")
