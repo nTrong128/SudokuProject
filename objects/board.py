@@ -7,19 +7,19 @@ from utils.calculate_stuff import map_to_area_index
 
 
 class Board:
-    def __init__(self, rows=None, cols=None, areas=None):
-        if rows is None or cols is None or areas is None:
-            self.rows = {i: [1 for i in range(GRID_SIZE)] for i in range(GRID_SIZE)}
+    def __init__(self, rows=None, cols=None, areas=None, fixed_value=None):
+        if rows is None or cols is None or areas is None or fixed_value is None:
+            self.rows = {i: [0 for i in range(GRID_SIZE)] for i in range(GRID_SIZE)}
             self.cols = {i: [0 for i in range(GRID_SIZE)] for i in range(GRID_SIZE)}
             self.areas = {i: [0 for i in range(GRID_SIZE)] for i in range(GRID_SIZE)}
+            self.fixed_values: Dict[Coord, int] = {}
         else:
             self.rows = rows
-            self.rows = cols
+            self.cols = cols
             self.areas = areas
+            self.fixed_values = fixed_value
 
-        self.fitness_evaluation=0
-        self.fixed_values: Dict[Coord, int] = {}
-    
+        self.fitness_evaluation = 0
 
     def print(self):
         print("Rows: ")
@@ -41,8 +41,9 @@ class Board:
         area_index, value_index = map_to_area_index(coord)
         self.areas[area_index][value_index] = value
         self.fixed_values[coord] = value
+
     def fitness(self):
-        count_duplicate=lambda arr:len([x for x in arr if x!=0]) - len(set(x for x in arr if x!=0))
+        count_duplicate = lambda arr: len([x for x in arr if x != 0]) - len(set(x for x in arr if x != 0))
         for index in range(GRID_SIZE):
-            self.fitness_evaluation+=count_duplicate(self.rows[index]) +count_duplicate(self.cols[index])
+            self.fitness_evaluation += count_duplicate(self.rows[index]) + count_duplicate(self.cols[index])
         return self.fitness_evaluation
