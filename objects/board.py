@@ -38,6 +38,21 @@ class Board:
         for coord in self.fixed_values:
             print(f'{coord}: {self.fixed_values[coord]}')
 
+    def print_area(self):
+        print("Areas: ")
+        for area in self.areas:
+            print(f'{area}: {self.areas[area]}')
+
+    def print_matrix(self):
+        for row in range(GRID_SIZE):
+            for cell in range(GRID_SIZE):
+                print(f'{self.rows[row][cell]}', end=' ')
+                if cell == 2 or cell  == 5:
+                    print(" | ", end=' ')
+                if cell == 8:
+                    print()
+            if row == 2 or row == 5:
+                print("--------------------------")
     def add_value_by_coord(self, coord: Coord, value: int):
         self.rows[coord.row][coord.col] = value
         self.cols[coord.col][coord.row] = value
