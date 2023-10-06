@@ -7,18 +7,22 @@ from utils.calculate_stuff import map_to_area_index
 
 
 class Board:
-    def __init__(self, rows=None, cols=None, areas=None):
-        if rows is None or cols is None or areas is None:
+    def __init__(self, rows=None, cols=None, areas=None, fixed_value=None):
+        if rows is None or cols is None or areas is None or fixed_value is None:
+
             self.rows = {i: [0 for i in range(GRID_SIZE)] for i in range(GRID_SIZE)}
             self.cols = {i: [0 for i in range(GRID_SIZE)] for i in range(GRID_SIZE)}
             self.areas = {i: [0 for i in range(GRID_SIZE)] for i in range(GRID_SIZE)}
+            self.fixed_values: Dict[Coord, int] = {}
         else:
             self.rows = rows
-            self.rows = cols
+            self.cols = cols
             self.areas = areas
+            self.fixed_values = fixed_value
 
         self.fitness_evaluation = 0
         self.fixed_values: Dict[Coord, int] = {}
+
 
     def print(self):
         print("Rows: ")
