@@ -52,6 +52,7 @@ class Board:
                     print()
             if row == 2 or row == 5:
                 print("--------------------------")
+        print("Evaluation: ",self.fitness_evaluation)
 
     def add_value_by_coord(self, coord: Coord, value: int):
         self.rows[coord.row][coord.col] = value
