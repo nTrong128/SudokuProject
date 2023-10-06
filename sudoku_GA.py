@@ -57,6 +57,7 @@ def create_population(input_board: Board, population_size: int) -> list[Board]:
 
 
 def create_child(population: list[Board], population_size: int, children_size: int):
+    population_size = len(population)
     undiscovered_parent = [x for x in range(population_size)]
     while len(undiscovered_parent) > 1:
         father_index: int = 0
@@ -83,6 +84,16 @@ def create_child(population: list[Board], population_size: int, children_size: i
                 population.pop(mother_index)
                 population_size -= 1
 
-
+    natural_selection(population)
 def sort_population(population: list[Board]):
-    return sorted(population, key=lambda x: x.fitness_evaluation, reverse=True)
+    return sorted(population, key=lambda x: x.fitness_evaluation, reverse=False)
+
+
+def natural_selection(population: list[Board]) -> list[Board]:
+    population = sort_population(population)
+    divider = int(len(population)/4)
+    good_population = population[:divider]
+    random_population: list[Board]
+
+
+    population =  copy.deepcopy(good_population)
