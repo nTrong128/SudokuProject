@@ -51,7 +51,7 @@ class Board:
                 if cell == 8:
                     print()
             if row == 2 or row == 5:
-                print("--------------------------")
+                print("-------|---------|--------")
         print("Evaluation: ",self.fitness_evaluation)
 
     def add_value_by_coord(self, coord: Coord, value: int):
