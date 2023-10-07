@@ -61,7 +61,7 @@ class Board:
         self.areas[area_index][value_index] = value
         self.fixed_values[coord] = value
 
-    def fitness(self):
+    def update_fitness(self):
         count_duplicate = lambda arr: len([x for x in arr if x != 0]) - len(set(x for x in arr if x != 0))
         for index in range(GRID_SIZE):
             self.fitness_evaluation += count_duplicate(self.rows[index]) + count_duplicate(self.cols[index])

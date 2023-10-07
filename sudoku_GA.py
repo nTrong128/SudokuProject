@@ -18,28 +18,31 @@ def fill_areas(sudoku_Board: Board) -> None:
                 number.remove(value)
 
 
-def map_area_values_to_rows_cols(sudoku_Board: Board) -> None:
-    for area in range(GRID_SIZE):
+def map_area_values_to_rows_cols(area: int, sudoku_board) -> None:
+    top_left_index_Col = area * 3 // GRID_SIZE * 3
+    top_left_index_Row = area * 3 % GRID_SIZE
+    """
+    filling Rows in Board with values from the Areas
+    """
+    counter = 0
+    for i in range(top_left_index_Col, top_left_index_Col + 3):
+        for j in range(top_left_index_Row, top_left_index_Row + 3):
+            sudoku_board.rows[i][j] = sudoku_board.areas[area][counter]
+            counter += 1
+    """
+    filling Cols in Board with values from the Areas
+    """
+    counter = 0
+    for i in range(top_left_index_Row, top_left_index_Row + 3):
+        for j in range(top_left_index_Col, top_left_index_Col + 3):
+            sudoku_board.cols[i][j] = sudoku_board.areas[area][counter]
+            counter += 1
 
-        top_left_index_Col = area * 3 // GRID_SIZE * 3
-        top_left_index_Row = area * 3 % GRID_SIZE
-        """
-        filling Rows in Board with values from the Areas
-        """
-        counter = 0
-        for i in range(top_left_index_Col, top_left_index_Col + 3):
-            for j in range(top_left_index_Row, top_left_index_Row + 3):
-                sudoku_Board.rows[i][j] = sudoku_Board.areas[area][counter]
-                counter += 1
-        """
-        filling Cols in Board with values from the Areas
-        """
-        counter = 0
-        for i in range(top_left_index_Row, top_left_index_Row + 3):
-            for j in range(top_left_index_Col, top_left_index_Col + 3):
-                sudoku_Board.cols[i][j] = sudoku_Board.areas[area][counter]
-                counter += 1
-    sudoku_Board.fitness()
+
+def update_board_by_areas(sudoku_board: Board):
+    for area in range(GRID_SIZE):
+        map_area_values_to_rows_cols(area, sudoku_board)
+    sudoku_board.update_fitness()
 
 
 def create_population(input_board: Board, population_size: int) -> list[Board]:
@@ -52,7 +55,7 @@ def create_population(input_board: Board, population_size: int) -> list[Board]:
         population[i].cols = copy.deepcopy(input_board.cols)
         population[i].areas = copy.deepcopy(input_board.areas)
         fill_areas(population[i])
-        map_area_values_to_rows_cols(population[i])
+        update_board_by_areas(population[i])
     return population
 
 
@@ -72,7 +75,7 @@ def create_child(population: list[Board], children_size: int):
             child_board = Board()
             for j in range(GRID_SIZE):
                 child_board.areas[j] = copy.deepcopy(population[random.choice([father_index, mother_index])].areas[j])
-            map_area_values_to_rows_cols(child_board)
+            update_board_by_areas(child_board)
             population.append(child_board)
             population_size += 1
 
@@ -85,15 +88,16 @@ def create_child(population: list[Board], children_size: int):
                 population_size -= 1
 
     natural_selection(population)
+
+
 def sort_population(population: list[Board]):
     return sorted(population, key=lambda x: x.fitness_evaluation, reverse=False)
 
 
 def natural_selection(population: list[Board]) -> list[Board]:
     population = sort_population(population)
-    divider = int(len(population)/4)
+    divider = int(len(population) / 4)
     good_population = population[:divider]
     random_population: list[Board]
 
-
-    population =  copy.deepcopy(good_population)
+    population = copy.deepcopy(good_population)
