@@ -23,7 +23,6 @@ class Board:
         self.fitness_evaluation = 0
         self.fixed_values: Dict[Coord, int] = {}
 
-
     def print(self):
         print("Rows: ")
         for row in self.rows:
@@ -47,12 +46,14 @@ class Board:
         for row in range(GRID_SIZE):
             for cell in range(GRID_SIZE):
                 print(f'{self.rows[row][cell]}', end=' ')
-                if cell == 2 or cell  == 5:
+                if cell == 2 or cell == 5:
                     print(" | ", end=' ')
                 if cell == 8:
                     print()
             if row == 2 or row == 5:
                 print("--------------------------")
+        print("Evaluation: ",self.fitness_evaluation)
+
     def add_value_by_coord(self, coord: Coord, value: int):
         self.rows[coord.row][coord.col] = value
         self.cols[coord.col][coord.row] = value
