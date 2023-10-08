@@ -7,23 +7,25 @@ start_time = time.time()
 if __name__ == "__main__":
     board = read_from_file("input1.txt")
 
-    population_size = 500
+    population_size = 1000
     children_size = 4
     population: list[Board] = create_population(board, population_size)
-    generation = 20
+    max_generation = 250
     selection_rate = 0.25
     random_selection_rate = 0.25
     min_evaluation = Board()
-    for i in range(generation):
+    for i in range(max_generation):
         population = create_child(population, children_size, selection_rate,random_selection_rate)
         print("Generation :", i+1)
         print("Number of individuals: ", len(population))
         min_evaluation = min(population, key=lambda x: x.fitness_evaluation)
         print("Min evaluation: ", min_evaluation.fitness_evaluation)
-        if i == generation:
+        if min_evaluation.fitness_evaluation == 0:
+            print("Solved")
             min_evaluation.print_matrix()
+            break
 
-    min_evaluation.print_matrix()
+    # min_evaluation.print_matrix()
 
     # population = create_population(board, 2)
     # population[0].print_matrix()
