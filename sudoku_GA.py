@@ -118,7 +118,7 @@ def natural_selection(population: list[Board], selection_rate, random_selection_
     return population
 
 
-def mutate_area(sudoku_board: Board, area: int):
+def mutate_area(sudoku_board: Board, area: int) -> bool:
     area_values = sudoku_board.areas[area]
     available_indices_to_swap = []
 
@@ -126,6 +126,9 @@ def mutate_area(sudoku_board: Board, area: int):
         coord = get_coord_by_area_index(area, index)
         if coord not in sudoku_board.fixed_values:
             available_indices_to_swap.append(index)
+
+    if len(available_indices_to_swap) == 0:
+        return False
 
     pair_to_swap = random.choices(available_indices_to_swap, k=2)
 
@@ -135,4 +138,5 @@ def mutate_area(sudoku_board: Board, area: int):
     area_values[index_1], area_values[index_2] = area_values[index_2], area_values[index_1]
 
     map_area_values_to_rows_cols(sudoku_board, area)
-    # print("Mutate Area: ", area, "index_1: ",index_1, "index_2: ", index_2)
+    return True
+
