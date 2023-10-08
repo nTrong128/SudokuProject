@@ -3,6 +3,7 @@ import random
 
 from constants import GRID_SIZE
 from objects.board import Board
+from utils.calculate_stuff import get_coord_by_area_index
 
 
 def fill_areas(sudoku_Board: Board) -> None:
@@ -16,6 +17,7 @@ def fill_areas(sudoku_Board: Board) -> None:
                 value = random.choice(number)
                 sudoku_Board.areas[area][cell] = value
                 number.remove(value)
+    update_board_by_areas(sudoku_Board)
 
 
 def map_area_values_to_rows_cols(area: int, sudoku_board) -> None:
@@ -101,3 +103,22 @@ def natural_selection(population: list[Board]) -> list[Board]:
     random_population: list[Board]
 
     population = copy.deepcopy(good_population)
+
+
+def mutate_area(area: int, sudoku_board: Board):
+    area_values = sudoku_board.areas[area]
+    available_indices_to_swap = []
+
+    for index, value in enumerate(area_values):
+        coord = get_coord_by_area_index(area, index)
+        if coord not in sudoku_board.fixed_values:
+            available_indices_to_swap.append(index)
+
+    pair_to_swap = random.choices(available_indices_to_swap, k=2)
+
+    index_1 = pair_to_swap[0]
+    index_2 = pair_to_swap[1]
+
+    area_values[index_1], area_values[index_2] = area_values[index_2], area_values[index_1]
+
+    map_area_values_to_rows_cols(area, sudoku_board)
