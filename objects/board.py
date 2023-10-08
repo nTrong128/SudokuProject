@@ -63,6 +63,7 @@ class Board:
 
     def update_fitness(self):
         count_duplicate = lambda arr: len([x for x in arr if x != 0]) - len(set(x for x in arr if x != 0))
+        fitness_values = 0
         for index in range(GRID_SIZE):
-            self.fitness_evaluation += count_duplicate(self.rows[index]) + count_duplicate(self.cols[index])
-        return self.fitness_evaluation
+            fitness_values += count_duplicate(self.rows[index]) + count_duplicate(self.cols[index])
+        self.fitness_evaluation = fitness_values
