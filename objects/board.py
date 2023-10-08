@@ -51,7 +51,7 @@ class Board:
                 if cell == 8:
                     print()
             if row == 2 or row == 5:
-                print("--------------------------")
+                print("-------|---------|--------")
         print("Evaluation: ",self.fitness_evaluation)
 
     def add_value_by_coord(self, coord: Coord, value: int):
@@ -63,9 +63,10 @@ class Board:
 
     def update_fitness(self):
         count_duplicate = lambda arr: len([x for x in arr if x != 0]) - len(set(x for x in arr if x != 0))
+        fitness_values = 0
         for index in range(GRID_SIZE):
-            self.fitness_evaluation += count_duplicate(self.rows[index]) + count_duplicate(self.cols[index])
-        return self.fitness_evaluation
+            fitness_values += count_duplicate(self.rows[index]) + count_duplicate(self.cols[index])
+        self.fitness_evaluation = fitness_values
 
     def get_value_by_coord(self, coord):
         return self.rows[coord.row][coord.col]
@@ -75,3 +76,4 @@ class Board:
 
         count_duplicates = self.rows[coord.row].count(coord_value) + self.cols[coord.col].count(coord_value)
         return count_duplicates
+
