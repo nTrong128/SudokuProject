@@ -67,3 +67,13 @@ class Board:
         for index in range(GRID_SIZE):
             fitness_values += count_duplicate(self.rows[index]) + count_duplicate(self.cols[index])
         self.fitness_evaluation = fitness_values
+
+    def get_value_by_coord(self, coord):
+        return self.rows[coord.row][coord.col]
+
+    def calculate_duplicates_by_coord(self, coord: Coord):
+        coord_value = self.get_value_by_coord(coord)
+
+        count_duplicates = self.rows[coord.row].count(coord_value) + self.cols[coord.col].count(coord_value)
+        return count_duplicates
+

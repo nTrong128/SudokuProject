@@ -20,7 +20,7 @@ def fill_areas(sudoku_Board: Board) -> None:
     update_board_by_areas(sudoku_Board)
 
 
-def map_area_values_to_rows_cols(sudoku_Board: Board, area: int) -> None:
+def map_area_values_to_rows_cols(sudoku_board: Board, area: int) -> None:
     top_left_index_Col = area * 3 // GRID_SIZE * 3
     top_left_index_Row = area * 3 % GRID_SIZE
     """
@@ -29,7 +29,7 @@ def map_area_values_to_rows_cols(sudoku_Board: Board, area: int) -> None:
     counter = 0
     for i in range(top_left_index_Col, top_left_index_Col + 3):
         for j in range(top_left_index_Row, top_left_index_Row + 3):
-            sudoku_Board.rows[i][j] = sudoku_Board.areas[area][counter]
+            sudoku_board.rows[i][j] = sudoku_board.areas[area][counter]
             counter += 1
     """
     filling Cols in Board with values from the Areas
@@ -37,7 +37,7 @@ def map_area_values_to_rows_cols(sudoku_Board: Board, area: int) -> None:
     counter = 0
     for i in range(top_left_index_Row, top_left_index_Row + 3):
         for j in range(top_left_index_Col, top_left_index_Col + 3):
-            sudoku_Board.cols[i][j] = sudoku_Board.areas[area][counter]
+            sudoku_board.cols[i][j] = sudoku_board.areas[area][counter]
             counter += 1
 
 
@@ -74,7 +74,6 @@ def create_one_child(parent_Board: Board, mother_Board: Board, mutation=False) -
 
 
 def create_child(population: list[Board], children_size: int, selection_rate, random_selection_rate):
-
     unvisited_parent = []
     for x in range(len(population)):
         unvisited_parent.append(x)
@@ -125,18 +124,20 @@ def mutate_area(sudoku_board: Board, area: int) -> bool:
     for index, value in enumerate(area_values):
         coord = get_coord_by_area_index(area, index)
         if coord not in sudoku_board.fixed_values:
-            available_indices_to_swap.append(index)
+            available_indices_to_swap.append((index, coord))
 
     if len(available_indices_to_swap) == 0:
         return False
 
-    pair_to_swap = random.choices(available_indices_to_swap, k=2)
+    weights = [sudoku_board.calculate_duplicates_by_coord(elem[1]) for elem in available_indices_to_swap]
 
-    index_1 = pair_to_swap[0]
-    index_2 = pair_to_swap[1]
+    pair_to_swap = random.choices(available_indices_to_swap, weights=weights, k=2)
+
+    index_1 = pair_to_swap[0][0]
+    index_2 = pair_to_swap[1][0]
 
     area_values[index_1], area_values[index_2] = area_values[index_2], area_values[index_1]
 
     map_area_values_to_rows_cols(sudoku_board, area)
-    return True
 
+    return True
