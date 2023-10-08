@@ -3,6 +3,7 @@ import random
 
 from constants import GRID_SIZE
 from objects.board import Board
+from utils.calculate_stuff import get_coord_by_area_index
 
 
 def fill_areas(sudoku_Board: Board) -> None:
@@ -16,30 +17,34 @@ def fill_areas(sudoku_Board: Board) -> None:
                 value = random.choice(number)
                 sudoku_Board.areas[area][cell] = value
                 number.remove(value)
+    update_board_by_areas(sudoku_Board)
 
 
-def map_area_values_to_rows_cols(sudoku_Board: Board) -> None:
+def map_area_values_to_rows_cols(area: int, sudoku_board) -> None:
+    top_left_index_Col = area * 3 // GRID_SIZE * 3
+    top_left_index_Row = area * 3 % GRID_SIZE
+    """
+    filling Rows in Board with values from the Areas
+    """
+    counter = 0
+    for i in range(top_left_index_Col, top_left_index_Col + 3):
+        for j in range(top_left_index_Row, top_left_index_Row + 3):
+            sudoku_board.rows[i][j] = sudoku_board.areas[area][counter]
+            counter += 1
+    """
+    filling Cols in Board with values from the Areas
+    """
+    counter = 0
+    for i in range(top_left_index_Row, top_left_index_Row + 3):
+        for j in range(top_left_index_Col, top_left_index_Col + 3):
+            sudoku_board.cols[i][j] = sudoku_board.areas[area][counter]
+            counter += 1
+
+
+def update_board_by_areas(sudoku_board: Board):
     for area in range(GRID_SIZE):
-
-        top_left_index_Col = area * 3 // GRID_SIZE * 3
-        top_left_index_Row = area * 3 % GRID_SIZE
-        """
-        filling Rows in Board with values from the Areas
-        """
-        counter = 0
-        for i in range(top_left_index_Col, top_left_index_Col + 3):
-            for j in range(top_left_index_Row, top_left_index_Row + 3):
-                sudoku_Board.rows[i][j] = sudoku_Board.areas[area][counter]
-                counter += 1
-        """
-        filling Cols in Board with values from the Areas
-        """
-        counter = 0
-        for i in range(top_left_index_Row, top_left_index_Row + 3):
-            for j in range(top_left_index_Col, top_left_index_Col + 3):
-                sudoku_Board.cols[i][j] = sudoku_Board.areas[area][counter]
-                counter += 1
-    sudoku_Board.fitness()
+        map_area_values_to_rows_cols(area, sudoku_board)
+    sudoku_board.update_fitness()
 
 
 def create_population(input_board: Board, population_size: int) -> list[Board]:
@@ -52,7 +57,7 @@ def create_population(input_board: Board, population_size: int) -> list[Board]:
         population[i].cols = copy.deepcopy(input_board.cols)
         population[i].areas = copy.deepcopy(input_board.areas)
         fill_areas(population[i])
-        map_area_values_to_rows_cols(population[i])
+        update_board_by_areas(population[i])
     return population
 
 
@@ -72,7 +77,7 @@ def create_child(population: list[Board], children_size: int):
             child_board = Board()
             for j in range(GRID_SIZE):
                 child_board.areas[j] = copy.deepcopy(population[random.choice([father_index, mother_index])].areas[j])
-            map_area_values_to_rows_cols(child_board)
+            update_board_by_areas(child_board)
             population.append(child_board)
             population_size += 1
 
@@ -85,15 +90,35 @@ def create_child(population: list[Board], children_size: int):
                 population_size -= 1
 
     natural_selection(population)
+
+
 def sort_population(population: list[Board]):
     return sorted(population, key=lambda x: x.fitness_evaluation, reverse=False)
 
 
 def natural_selection(population: list[Board]) -> list[Board]:
     population = sort_population(population)
-    divider = int(len(population)/4)
+    divider = int(len(population) / 4)
     good_population = population[:divider]
     random_population: list[Board]
 
+    population = copy.deepcopy(good_population)
 
-    population =  copy.deepcopy(good_population)
+
+def mutate_area(area: int, sudoku_board: Board):
+    area_values = sudoku_board.areas[area]
+    available_indices_to_swap = []
+
+    for index, value in enumerate(area_values):
+        coord = get_coord_by_area_index(area, index)
+        if coord not in sudoku_board.fixed_values:
+            available_indices_to_swap.append(index)
+
+    pair_to_swap = random.choices(available_indices_to_swap, k=2)
+
+    index_1 = pair_to_swap[0]
+    index_2 = pair_to_swap[1]
+
+    area_values[index_1], area_values[index_2] = area_values[index_2], area_values[index_1]
+
+    map_area_values_to_rows_cols(area, sudoku_board)
