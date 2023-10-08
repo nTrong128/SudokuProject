@@ -1,5 +1,5 @@
 from objects.board import Board
-from sudoku_GA import create_population, create_child, create_one_child
+from sudoku_GA import create_population, create_child, create_one_child, fill_areas, update_board_by_areas
 from utils.read_file import read_from_file
 import time
 
@@ -10,7 +10,7 @@ if __name__ == "__main__":
     population_size = 1000
     children_size = 4
     population: list[Board] = create_population(board, population_size)
-    max_generation = 250
+    max_generation = 200
     selection_rate = 0.25
     random_selection_rate = 0.25
     min_evaluation = Board()
@@ -24,8 +24,6 @@ if __name__ == "__main__":
             print("Solved")
             min_evaluation.print_matrix()
             break
-
-    # min_evaluation.print_matrix()
 
     # population = create_population(board, 2)
     # population[0].print_matrix()

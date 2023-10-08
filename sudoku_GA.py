@@ -3,7 +3,7 @@ import random
 
 from constants import GRID_SIZE
 from objects.board import Board
-from utils.calculate_stuff import get_coord_by_area_index
+from utils.calculate_stuff import get_coord_by_area_index, top_left_corner_coord
 
 
 def fill_areas(sudoku_Board: Board) -> None:
@@ -20,30 +20,36 @@ def fill_areas(sudoku_Board: Board) -> None:
     update_board_by_areas(sudoku_Board)
 
 
-def map_area_values_to_rows_cols(sudoku_board: Board, area: int) -> None:
-    top_left_index_Col = area * 3 // GRID_SIZE * 3
-    top_left_index_Row = area * 3 % GRID_SIZE
-    """
-    filling Rows in Board with values from the Areas
-    """
+def update_rows_cols_by_area(sudoku_board: Board, area: int) -> None:
+    update_rows_by_area(sudoku_board, area)
+    update_cols_by_area(sudoku_board, area)
+
+
+def update_rows_by_area(sudoku_board: Board, area: int):
+    top_left_coord = top_left_corner_coord(area)
+
     counter = 0
-    for i in range(top_left_index_Col, top_left_index_Col + 3):
-        for j in range(top_left_index_Row, top_left_index_Row + 3):
-            sudoku_board.rows[i][j] = sudoku_board.areas[area][counter]
+    for row in range(top_left_coord.row, top_left_coord.row + 3):
+        for col in range(top_left_coord.col, top_left_coord.col + 3):
+            sudoku_board.rows[row][col] = sudoku_board.areas[area][counter]
             counter += 1
-    """
-    filling Cols in Board with values from the Areas
-    """
-    counter = 0
-    for i in range(top_left_index_Row, top_left_index_Row + 3):
-        for j in range(top_left_index_Col, top_left_index_Col + 3):
-            sudoku_board.cols[i][j] = sudoku_board.areas[area][counter]
-            counter += 1
+
+
+def update_cols_by_area(sudoku_board: Board, area: int):
+    top_left_coord = top_left_corner_coord(area)
+
+    base_counter = 0
+    for col in range(top_left_coord.col, top_left_coord.col + 3):
+        counter = base_counter
+        for row in range(top_left_coord.row, top_left_coord.row + 3):
+            sudoku_board.cols[col][row] = sudoku_board.areas[area][counter]
+            counter += 3
+        base_counter += 1
 
 
 def update_board_by_areas(sudoku_board: Board):
     for area in range(GRID_SIZE):
-        map_area_values_to_rows_cols(sudoku_board, area)
+        update_rows_cols_by_area(sudoku_board, area)
     sudoku_board.update_fitness()
 
 
@@ -67,7 +73,7 @@ def create_one_child(parent_Board: Board, mother_Board: Board, mutation=False) -
     for j in range(GRID_SIZE):
         child_board.areas[j] = copy.deepcopy(random.choice([parent_Board.areas[j], mother_Board.areas[j]]))
     if mutation:
-        mutate_area(child_board, random.randint(0, 8))
+        mutate_individual(child_board)
     update_board_by_areas(child_board)
 
     return child_board
@@ -90,7 +96,7 @@ def create_child(population: list[Board], children_size: int, selection_rate, ra
         for i in range(children_size):
             child_board = create_one_child(population[father_index], population[mother_index])
             if i == 1 or i == 2:
-                mutate_area(child_board, random.randint(0, 8))
+                mutate_individual(child_board)
             update_board_by_areas(child_board)
             population.append(child_board)
 
@@ -138,6 +144,13 @@ def mutate_area(sudoku_board: Board, area: int) -> bool:
 
     area_values[index_1], area_values[index_2] = area_values[index_2], area_values[index_1]
 
-    map_area_values_to_rows_cols(sudoku_board, area)
-
     return True
+
+
+def mutate_individual(sudoku_board: Board):
+    area_to_choose = list(range(9))
+    area_scores = [sudoku_board.area_ranking(area) for area in range(GRID_SIZE)]
+
+    area_to_mutate = random.choices(area_to_choose, weights=area_scores, k=1)
+
+    mutate_area(sudoku_board, area_to_mutate[0])
