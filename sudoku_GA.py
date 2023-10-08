@@ -105,7 +105,7 @@ def natural_selection(population: list[Board]) -> list[Board]:
     population = copy.deepcopy(good_population)
 
 
-def mutate_area(area: int, sudoku_board: Board):
+def mutate_area(area: int, sudoku_board: Board) -> bool:
     area_values = sudoku_board.areas[area]
     available_indices_to_swap = []
 
@@ -113,6 +113,9 @@ def mutate_area(area: int, sudoku_board: Board):
         coord = get_coord_by_area_index(area, index)
         if coord not in sudoku_board.fixed_values:
             available_indices_to_swap.append(index)
+
+    if len(available_indices_to_swap) == 0:
+        return False
 
     pair_to_swap = random.choices(available_indices_to_swap, k=2)
 
@@ -122,3 +125,5 @@ def mutate_area(area: int, sudoku_board: Board):
     area_values[index_1], area_values[index_2] = area_values[index_2], area_values[index_1]
 
     map_area_values_to_rows_cols(area, sudoku_board)
+
+    return True
