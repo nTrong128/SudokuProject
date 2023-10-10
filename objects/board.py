@@ -3,7 +3,7 @@ from typing import Dict
 
 from constants import GRID_SIZE
 from objects.coordinate import Coord
-from utils.calculate_stuff import map_to_area_index
+from utils.calculate_stuff import map_to_area_index, get_coord_by_area_index
 
 
 class Board:
@@ -62,7 +62,7 @@ class Board:
         self.fixed_values[coord] = value
 
     def update_fitness(self):
-        count_duplicate = lambda arr: len([x for x in arr if x != 0]) - len(set(x for x in arr if x != 0))
+        count_duplicate = lambda arr: len(arr) - len(set(arr))
         fitness_values = 0
         for index in range(GRID_SIZE):
             fitness_values += count_duplicate(self.rows[index]) + count_duplicate(self.cols[index])
@@ -77,3 +77,8 @@ class Board:
         count_duplicates = self.rows[coord.row].count(coord_value) + self.cols[coord.col].count(coord_value)
         return count_duplicates
 
+    def area_ranking(self, area: int):
+        area_values = self.areas[area]
+        coords = [get_coord_by_area_index(area, area_index) for area_index in range(len(area_values))]
+
+        return sum([self.calculate_duplicates_by_coord(coord) for coord in coords])
