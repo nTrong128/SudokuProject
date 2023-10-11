@@ -1,6 +1,4 @@
-from objects.board import Board
-from objects.coordinate import Coord
-
+from SudokuProject.objects.board import Board
 
 def read_from_file(file_path: str):
     board = Board()
@@ -8,9 +6,8 @@ def read_from_file(file_path: str):
         for row, line in enumerate(file):
             curr_row = [int(x) for x in line.split()]
             for col, value in enumerate(curr_row):
-                coord = Coord(row, col)
                 if value != 0:
-                    board.add_value_by_coord(coord, value)
+                    board.add_value_by_coord(row,col, value)
     return board
 
 

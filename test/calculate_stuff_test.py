@@ -1,7 +1,7 @@
 import unittest
 
-from objects.coordinate import Coord
-from utils.calculate_stuff import get_area_by_coord, top_left_corner_coord, map_to_area_index
+from SudokuProject.objects.coordinate import Coord
+from SudokuProject.utils.calculate_stuff import get_area_by_coord, top_left_corner_coord, map_to_area_index
 
 
 class TestCalculateStuffFunctions(unittest.TestCase):
