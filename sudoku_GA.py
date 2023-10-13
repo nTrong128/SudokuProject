@@ -4,10 +4,10 @@ import random
 from constants import GRID_SIZE
 from objects.board import Board
 from utils.calculate_stuff import get_coord_by_area_index, top_left_corner_coord, invert_weight_list
+from utils.graph import draw_graph_scores
 
 
 def fill_areas(sudoku_Board: Board) -> None:
-    # Fills the areas of the sudoku board with random values
     for area in range(GRID_SIZE):
         number = [x for x in range(1, GRID_SIZE + 1) if x not in sudoku_Board.areas[area]]
         for cell in range(GRID_SIZE):
@@ -51,9 +51,6 @@ def update_board_by_areas(sudoku_board: Board):
 
 
 def create_population(input_board: Board, population_size: int) -> list[Board]:
-    """
-    Creates a population of sudoku boards with random values
-    """
     population = []
     for i in range(population_size):
         board = Board()
@@ -64,51 +61,18 @@ def create_population(input_board: Board, population_size: int) -> list[Board]:
     return population
 
 
-def create_child(father_board: Board, mother_board: Board, mutation=False) -> Board:
+def create_child(father_board: Board, mother_board: Board, mutation: bool = False) -> Board:
     child_board = Board()
     for j in range(GRID_SIZE):
         child_board.areas[j] = copy.deepcopy(random.choice([father_board.areas[j], mother_board.areas[j]]))
-    if child_board.fitness_evaluation == 2:
-        mutate_individual(child_board)
     if mutation:
+        mutate_individual(child_board)
+    if child_board.fitness_evaluation == 2:
         mutate_individual(child_board)
     return child_board
 
 
-def create_children(population: list[Board], children_size: int, selection_rate, random_selection_rate) -> list[Board]:
-    unvisited_parent = []
-    for x in range(len(population)):
-        unvisited_parent.append(x)
-
-    while len(unvisited_parent) > 1:
-        father_index: int = 0
-        mother_index: int = 0
-        while father_index == mother_index:
-            father_index = random.choice(unvisited_parent)
-            mother_index = random.choice(unvisited_parent)
-        unvisited_parent.remove(father_index)
-        unvisited_parent.remove(mother_index)
-
-        # child_evaluation = []
-        for i in range(children_size):
-            # child_board = create_one_child(population[father_index], population[mother_index])
-            if i != 1:
-                child_board = create_child(population[father_index], population[mother_index], True)
-            else:
-                child_board = create_child(population[father_index], population[mother_index])
-
-            update_board_by_areas(child_board)
-            population.append(child_board)
-            # child_evaluation.append(child_board.fitness_evaluation)
-        # if population[father_index].fitness_evaluation < min(child_evaluation):
-        population.pop(father_index)
-        population.pop(mother_index)
-
-    # return population
-    return natural_selection(population, selection_rate, random_selection_rate)
-
-
-def new_create_children(population: list[Board], children_size: int, selection_rate, random_selection_rate):
+def create_children(population: list[Board], children_size: int, selection_rate):
     number_of_parents = len(population) // 2
 
     unvisited_parent = []
@@ -135,41 +99,22 @@ def new_create_children(population: list[Board], children_size: int, selection_r
             new_population.append(child_board)
         number_of_parents -= 1
 
-    return natural_selection(new_population, selection_rate, random_selection_rate)
+    return natural_selection(new_population, selection_rate)
 
 
 def sort_population(population: list[Board]) -> list[Board]:
     return sorted(population, key=lambda x: x.fitness_evaluation, reverse=False)
 
 
-def natural_selection(population: list[Board], selection_rate, random_selection_rate) -> list[Board]:
+def natural_selection(population: list[Board], selection_rate) -> list[Board]:
     population = sort_population(population)
-    partition_size = int(len(population) * selection_rate * 2)
-    good_population = population[:partition_size]
-    # weights = [x.fitness_evaluation for x in population[partition_size:]]
-    # max_weights = max(weights)
-    # weights = [max_weights - x for x in weights]
-    # random_population = random.choices(population[partition_size:], weights=weights,
-    #                                    k=int(len(population) * random_selection_rate))
-    # population = copy.deepcopy(good_population + random_population)
+    good_population = population[:int(len(population) * selection_rate)]
     population = copy.deepcopy(good_population)
-
     random.shuffle(population)
     return population
 
 
-# def area_for_mutate(sudoku_board: Board) -> int:
-#     max_area: int = 0
-#     area_index: int
-#     for i in range(GRID_SIZE):
-#         if sudoku_board.area_ranking(i) > max_area:
-#             max_area = sudoku_board.area_ranking(i)
-#             area_index = i
-#
-#     return area_index
-
 def mutate_area(sudoku_board: Board, area: int) -> bool:
-    # area = area_for_mutate(sudoku_board)
     area_values = sudoku_board.areas[area]
     available_indices_to_swap = []
 
@@ -206,8 +151,31 @@ def mutate_individual(sudoku_board: Board):
 
     mutate_area(sudoku_board, area_to_mutate[0])
 
-#
-# listch = [1,2,3,4,5,6,7,8,9,10]
-# weights = [1,2,0,2,0,0,1,1,3,1]
-# for i in range(100):
-#     print(random.choices(listch, weights=weights, k=1))
+
+def sudoku_GA(sudoku_board: Board, population_size: int, children_size: int, selection_rate: float, max_generation: int,
+              draw_graph: bool) -> None:
+
+    population: list[Board] = create_population(sudoku_board, population_size)
+    max_evaluation_list = []
+    min_evaluation_list = []
+
+    for i in range(max_generation):
+        population = create_children(population, children_size, selection_rate)
+        print("Generation :", i + 1)
+        print("Number of individuals: ", len(population))
+        min_evaluation = min(population, key=lambda x: x.fitness_evaluation)
+        max_evaluation = max(population, key=lambda x: x.fitness_evaluation)
+
+        print("Max evaluation: ", max_evaluation.fitness_evaluation)
+        max_evaluation_list.append(max_evaluation.fitness_evaluation)
+
+        print("Min evaluation: ", min_evaluation.fitness_evaluation)
+        min_evaluation_list.append(min_evaluation.fitness_evaluation)
+
+        if min_evaluation.fitness_evaluation == 0:
+            print("Solution found: ")
+            min_evaluation.print_matrix()
+            break
+
+    if draw_graph:
+        draw_graph_scores(min_evaluation_list, max_evaluation_list)

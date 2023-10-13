@@ -9,7 +9,7 @@ unittest.TestCase.maxDiff = None
 
 class TestReadFile(unittest.TestCase):
     def test_read_from_file(self):
-        sudoku_from_file = read_from_file("input1.txt")
+        sudoku_from_file = read_from_file("default.txt")
         sudoku_target = Board(
             rows={
                 0: [0, 6, 1, 0, 0, 7, 0, 0, 3],
