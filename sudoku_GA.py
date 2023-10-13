@@ -3,11 +3,11 @@ import random
 
 from constants import GRID_SIZE
 from objects.board import Board
-from utils.calculate_stuff import get_coord_by_area_index, top_left_corner_coord
+from utils.calculate_stuff import get_coord_by_area_index, top_left_corner_coord, invert_weight_list
 
 
 def fill_areas(sudoku_Board: Board) -> None:
-    #Fills the areas of the sudoku board with random values
+    # Fills the areas of the sudoku board with random values
     for area in range(GRID_SIZE):
         number = [x for x in range(1, GRID_SIZE + 1) if x not in sudoku_Board.areas[area]]
         for cell in range(GRID_SIZE):
@@ -15,6 +15,7 @@ def fill_areas(sudoku_Board: Board) -> None:
                 value = random.choice(number)
                 sudoku_Board.areas[area][cell] = value
                 number.remove(value)
+
 
 def update_cols_by_area(sudoku_board: Board, area: int):
     top_left_coord = top_left_corner_coord(area)
@@ -26,6 +27,8 @@ def update_cols_by_area(sudoku_board: Board, area: int):
             sudoku_board.cols[col][row] = sudoku_board.areas[area][counter]
             counter += 3
         base_counter += 1
+
+
 def update_rows_by_area(sudoku_board: Board, area: int) -> None:
     top_left_index_Col = area * 3 // GRID_SIZE * 3
     top_left_index_Row = area * 3 % GRID_SIZE
@@ -34,9 +37,12 @@ def update_rows_by_area(sudoku_board: Board, area: int) -> None:
         for j in range(top_left_index_Row, top_left_index_Row + 3):
             sudoku_board.rows[i][j] = sudoku_board.areas[area][counter]
             counter += 1
+
+
 def map_area_values_to_rows_cols(sudoku_board: Board, area: int) -> None:
     update_rows_by_area(sudoku_board, area)
     update_cols_by_area(sudoku_board, area)
+
 
 def update_board_by_areas(sudoku_board: Board):
     for area in range(GRID_SIZE):
@@ -58,10 +64,10 @@ def create_population(input_board: Board, population_size: int) -> list[Board]:
     return population
 
 
-def create_one_child(parent_Board: Board, mother_Board: Board, mutation=False) -> Board:
+def create_child(father_board: Board, mother_board: Board, mutation=False) -> Board:
     child_board = Board()
     for j in range(GRID_SIZE):
-        child_board.areas[j] = copy.deepcopy(random.choice([parent_Board.areas[j], mother_Board.areas[j]]))
+        child_board.areas[j] = copy.deepcopy(random.choice([father_board.areas[j], mother_board.areas[j]]))
     if child_board.fitness_evaluation == 2:
         mutate_individual(child_board)
     if mutation:
@@ -69,7 +75,7 @@ def create_one_child(parent_Board: Board, mother_Board: Board, mutation=False) -
     return child_board
 
 
-def create_child(population: list[Board], children_size: int, selection_rate, random_selection_rate) -> list[Board]:
+def create_children(population: list[Board], children_size: int, selection_rate, random_selection_rate) -> list[Board]:
     unvisited_parent = []
     for x in range(len(population)):
         unvisited_parent.append(x)
@@ -83,23 +89,53 @@ def create_child(population: list[Board], children_size: int, selection_rate, ra
         unvisited_parent.remove(father_index)
         unvisited_parent.remove(mother_index)
 
-        # child_evaluaton = []
+        # child_evaluation = []
         for i in range(children_size):
             # child_board = create_one_child(population[father_index], population[mother_index])
             if i != 1:
-                child_board = create_one_child(population[father_index], population[mother_index], True)
+                child_board = create_child(population[father_index], population[mother_index], True)
             else:
-                child_board = create_one_child(population[father_index], population[mother_index])
+                child_board = create_child(population[father_index], population[mother_index])
 
             update_board_by_areas(child_board)
             population.append(child_board)
-            # child_evaluaton.append(child_board.fitness_evaluation)
-        # if population[father_index].fitness_evaluation < min(child_evaluaton):
+            # child_evaluation.append(child_board.fitness_evaluation)
+        # if population[father_index].fitness_evaluation < min(child_evaluation):
         population.pop(father_index)
         population.pop(mother_index)
 
     # return population
     return natural_selection(population, selection_rate, random_selection_rate)
+
+
+def new_create_children(population: list[Board], children_size: int, selection_rate, random_selection_rate):
+    number_of_parents = len(population) // 2
+
+    unvisited_parent = []
+    unvisited_parent_weight = []
+
+    new_population = []
+
+    for x in range(len(population)):
+        unvisited_parent.append(x)
+        unvisited_parent_weight.append(population[x].fitness_evaluation)
+
+    unvisited_parent_weight = invert_weight_list(unvisited_parent_weight)
+
+    while number_of_parents > 0:
+        father_index: int = 0
+        mother_index: int = 0
+        while father_index == mother_index:
+            father_index = random.choices(unvisited_parent, weights=unvisited_parent_weight, k=1)[0]
+            mother_index = random.choices(unvisited_parent, weights=unvisited_parent_weight, k=1)[0]
+
+        for i in range(children_size):
+            child_board = create_child(population[father_index], population[mother_index], True)
+            update_board_by_areas(child_board)
+            new_population.append(child_board)
+        number_of_parents -= 1
+
+    return natural_selection(new_population, selection_rate, random_selection_rate)
 
 
 def sort_population(population: list[Board]) -> list[Board]:
@@ -108,13 +144,13 @@ def sort_population(population: list[Board]) -> list[Board]:
 
 def natural_selection(population: list[Board], selection_rate, random_selection_rate) -> list[Board]:
     population = sort_population(population)
-    partition_size = int(len(population) * selection_rate*2)
+    partition_size = int(len(population) * selection_rate * 2)
     good_population = population[:partition_size]
-    weights = [x.fitness_evaluation for x in population[partition_size:]]
-    max_weights = max(weights)
-    weights = [max_weights - x for x in weights ]
-    random_population = random.choices(population[partition_size:], weights=weights,
-                                       k=int(len(population) * random_selection_rate))
+    # weights = [x.fitness_evaluation for x in population[partition_size:]]
+    # max_weights = max(weights)
+    # weights = [max_weights - x for x in weights]
+    # random_population = random.choices(population[partition_size:], weights=weights,
+    #                                    k=int(len(population) * random_selection_rate))
     # population = copy.deepcopy(good_population + random_population)
     population = copy.deepcopy(good_population)
 
@@ -169,8 +205,6 @@ def mutate_individual(sudoku_board: Board):
     area_to_mutate = random.choices(area_to_choose, weights=area_scores, k=1)
 
     mutate_area(sudoku_board, area_to_mutate[0])
-
-
 
 #
 # listch = [1,2,3,4,5,6,7,8,9,10]
