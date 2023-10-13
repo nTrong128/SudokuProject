@@ -70,7 +70,7 @@ def create_child(father_board: Board, mother_board: Board, mutation=False) -> Bo
         child_board.areas[j] = copy.deepcopy(random.choice([father_board.areas[j], mother_board.areas[j]]))
     if child_board.fitness_evaluation == 2:
         mutate_individual(child_board)
-    if mutation:
+    elif mutation:
         mutate_individual(child_board)
     return child_board
 
