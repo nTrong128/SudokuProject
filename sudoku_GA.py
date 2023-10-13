@@ -4,10 +4,10 @@ import random
 from constants import GRID_SIZE
 from objects.board import Board
 from utils.calculate_stuff import get_coord_by_area_index, top_left_corner_coord, invert_weight_list
+from utils.graph import draw_graph_scores
 
 
 def fill_areas(sudoku_Board: Board) -> None:
-    # Fills the areas of the sudoku board with random values
     for area in range(GRID_SIZE):
         number = [x for x in range(1, GRID_SIZE + 1) if x not in sudoku_Board.areas[area]]
         for cell in range(GRID_SIZE):
@@ -51,9 +51,6 @@ def update_board_by_areas(sudoku_board: Board):
 
 
 def create_population(input_board: Board, population_size: int) -> list[Board]:
-    """
-    Creates a population of sudoku boards with random values
-    """
     population = []
     for i in range(population_size):
         board = Board()
@@ -64,13 +61,13 @@ def create_population(input_board: Board, population_size: int) -> list[Board]:
     return population
 
 
-def create_child(father_board: Board, mother_board: Board, mutation=False) -> Board:
+def create_child(father_board: Board, mother_board: Board, mutation: bool = False) -> Board:
     child_board = Board()
     for j in range(GRID_SIZE):
         child_board.areas[j] = copy.deepcopy(random.choice([father_board.areas[j], mother_board.areas[j]]))
-    if child_board.fitness_evaluation == 2:
+    if mutation:
         mutate_individual(child_board)
-    elif mutation:
+    if child_board.fitness_evaluation == 2:
         mutate_individual(child_board)
     return child_board
 
@@ -116,6 +113,7 @@ def natural_selection(population: list[Board], selection_rate) -> list[Board]:
     random.shuffle(population)
     return population
 
+
 def mutate_area(sudoku_board: Board, area: int) -> bool:
     area_values = sudoku_board.areas[area]
     available_indices_to_swap = []
@@ -152,3 +150,32 @@ def mutate_individual(sudoku_board: Board):
     area_to_mutate = random.choices(area_to_choose, weights=area_scores, k=1)
 
     mutate_area(sudoku_board, area_to_mutate[0])
+
+
+def sudoku_GA(sudoku_board: Board, population_size: int, children_size: int, selection_rate: float, max_generation: int,
+              draw_graph: bool) -> None:
+
+    population: list[Board] = create_population(sudoku_board, population_size)
+    max_evaluation_list = []
+    min_evaluation_list = []
+
+    for i in range(max_generation):
+        population = create_children(population, children_size, selection_rate)
+        print("Generation :", i + 1)
+        print("Number of individuals: ", len(population))
+        min_evaluation = min(population, key=lambda x: x.fitness_evaluation)
+        max_evaluation = max(population, key=lambda x: x.fitness_evaluation)
+
+        print("Max evaluation: ", max_evaluation.fitness_evaluation)
+        max_evaluation_list.append(max_evaluation.fitness_evaluation)
+
+        print("Min evaluation: ", min_evaluation.fitness_evaluation)
+        min_evaluation_list.append(min_evaluation.fitness_evaluation)
+
+        if min_evaluation.fitness_evaluation == 0:
+            print("Solution found: ")
+            min_evaluation.print_matrix()
+            break
+
+    if draw_graph:
+        draw_graph_scores(min_evaluation_list, max_evaluation_list)
