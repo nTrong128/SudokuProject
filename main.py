@@ -11,7 +11,7 @@ def main():
     sudoku_GA(sudoku_board, POPULATION_SIZE, CHILDREN_SIZE, SELECTION_RATE, MAX_GENERATION, True)
 
     end_time = time.time()
-    print("RUN TIME: ", round((end_time - start_time),4), "seconds")
+    print("RUN TIME: ", round((end_time - start_time), 4), "seconds")
 
 
 if __name__ == "__main__":
