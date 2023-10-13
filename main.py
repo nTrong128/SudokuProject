@@ -1,13 +1,13 @@
 import time
 
 from objects.board import Board
-from sudoku_GA import create_population, create_child
+from sudoku_GA import create_population, create_children, new_create_children
 from utils.graph import draw_graph_scores
 from utils.read_file import read_from_file
 
 start_time = time.time()
 if __name__ == "__main__":
-    board = read_from_file("input1.txt")
+    board = read_from_file("easy.txt")
     population_size = 1000
     children_size = 4
     population: list[Board] = create_population(board, population_size)
@@ -19,7 +19,7 @@ if __name__ == "__main__":
     min_evaluation_graph = []
 
     for i in range(max_generation):
-        population = create_child(population, children_size, selection_rate, random_selection_rate)
+        population = new_create_children(population, children_size, selection_rate, random_selection_rate)
         print("Generation :", i + 1)
         print("Number of individuals: ", len(population))
         min_evaluation = min(population, key=lambda x: x.fitness_evaluation)

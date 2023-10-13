@@ -28,3 +28,8 @@ def map_to_area_index(board_coord: Coord) -> tuple[int, int]:
 def get_coord_by_area_index(area: int, area_index: int) -> Coord:
     top_left_corner = top_left_corner_coord(area)
     return Coord(top_left_corner.row + area_index // 3, top_left_corner.col + area_index % 3)
+
+
+def invert_weight_list(weights: list) -> list:
+    max_weight = max(weights)
+    return [max_weight - weight for weight in weights]
