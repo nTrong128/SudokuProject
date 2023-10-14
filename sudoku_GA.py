@@ -67,6 +67,8 @@ def create_child(father_board: Board, mother_board: Board, mutation: bool = Fals
         child_board.areas[j] = copy.deepcopy(random.choice([father_board.areas[j], mother_board.areas[j]]))
     if mutation:
         mutate_individual(child_board)
+        update_board_by_areas(child_board)
+
     if child_board.fitness_evaluation == 2:
         mutate_individual(child_board)
     return child_board
@@ -154,16 +156,27 @@ def mutate_individual(sudoku_board: Board):
 
 def sudoku_GA(sudoku_board: Board, population_size: int, children_size: int, selection_rate: float, max_generation: int,
               draw_graph: bool) -> None:
-
-    population: list[Board] = create_population(sudoku_board, population_size)
+    to_restart = 15
     max_evaluation_list = []
     min_evaluation_list = []
-
-    for i in range(max_generation):
+    restart_time = 0
+    population: list[Board] = create_population(sudoku_board, population_size)
+    non_evolution_gen = 0
+    previous_min_evaluation = 0
+    loop_count = 0
+    while loop_count < max_generation:
         population = create_children(population, children_size, selection_rate)
-        print("Generation :", i + 1)
+        print("Generation :", loop_count + 1)
         print("Number of individuals: ", len(population))
         min_evaluation = min(population, key=lambda x: x.fitness_evaluation)
+        if loop_count == 0:
+            previous_min_evaluation = min_evaluation.fitness_evaluation
+        if min_evaluation.fitness_evaluation >= previous_min_evaluation:
+            non_evolution_gen += 1
+        else:
+            previous_min_evaluation = min_evaluation.fitness_evaluation
+            non_evolution_gen = 0
+
         max_evaluation = max(population, key=lambda x: x.fitness_evaluation)
 
         print("Max evaluation: ", max_evaluation.fitness_evaluation)
@@ -171,11 +184,21 @@ def sudoku_GA(sudoku_board: Board, population_size: int, children_size: int, sel
 
         print("Min evaluation: ", min_evaluation.fitness_evaluation)
         min_evaluation_list.append(min_evaluation.fitness_evaluation)
-
+        loop_count += 1
         if min_evaluation.fitness_evaluation == 0:
-            print("Solution found: ")
+            print("\n\nRESTART TIME: ", restart_time)
+            print("SOLUTION FOUND: ")
             min_evaluation.print_matrix()
             break
+        if restart_time > 10:
+            print("No solution found after 10 restarts")
+            break
+        if non_evolution_gen >= to_restart:
+            print("No solution found at generation:", loop_count, ". Restart process.")
+            loop_count = 0
+            restart_time += 1
+            population = create_population(sudoku_board, population_size)
+            non_evolution_gen = 0
 
     if draw_graph:
         draw_graph_scores(min_evaluation_list, max_evaluation_list)

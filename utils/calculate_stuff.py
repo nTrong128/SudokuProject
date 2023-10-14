@@ -1,4 +1,3 @@
-from constants import GRID_SIZE
 from objects.coordinate import Coord
 
 

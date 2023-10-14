@@ -1,4 +1,3 @@
-from collections import namedtuple
 from typing import Dict
 
 from constants import GRID_SIZE
@@ -10,9 +9,9 @@ class Board:
     def __init__(self, rows=None, cols=None, areas=None, fixed_value=None):
         if rows is None or cols is None or areas is None or fixed_value is None:
 
-            self.rows = {i: [0 for i in range(GRID_SIZE)] for i in range(GRID_SIZE)}
-            self.cols = {i: [0 for i in range(GRID_SIZE)] for i in range(GRID_SIZE)}
-            self.areas = {i: [0 for i in range(GRID_SIZE)] for i in range(GRID_SIZE)}
+            self.rows = {i: [0 for _ in range(GRID_SIZE)] for i in range(GRID_SIZE)}
+            self.cols = {i: [0 for _ in range(GRID_SIZE)] for i in range(GRID_SIZE)}
+            self.areas = {i: [0 for _ in range(GRID_SIZE)] for i in range(GRID_SIZE)}
             self.fixed_values: Dict[Coord, int] = {}
         else:
             self.rows = rows
@@ -52,7 +51,7 @@ class Board:
                     print()
             if row == 2 or row == 5:
                 print("-------|---------|--------")
-        print("Evaluation: ",self.fitness_evaluation)
+        print("Evaluation: ", self.fitness_evaluation)
 
     def add_value_by_coord(self, coord: Coord, value: int):
         self.rows[coord.row][coord.col] = value
