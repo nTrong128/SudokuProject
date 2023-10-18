@@ -1,7 +1,7 @@
 import copy
 import random
 
-from constants import GRID_SIZE, POPULATION_SIZE, CHILDREN_SIZE, GOOD_SELECTION_RATE, MAX_GENERATION
+from constants import GRID_SIZE, POPULATION_SIZE, CHILDREN_SIZE, SELECTION_RATE, MAX_GENERATION
 from objects.board import Board
 from utils.tools import get_coord_by_area_index, top_left_corner_coord, invert_weight_list, calculate_weights
 from utils.graph import draw_graph_scores
@@ -164,7 +164,7 @@ def sudoku_GA(
         sudoku_board: Board,
         population_size: int = POPULATION_SIZE,
         children_size: int = CHILDREN_SIZE,
-        selection_rate: int = GOOD_SELECTION_RATE,
+        selection_rate: int = SELECTION_RATE,
         max_generation: int = MAX_GENERATION,
         draw_graph: bool = True
 ) -> None:
