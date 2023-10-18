@@ -2,7 +2,7 @@ from typing import Dict
 
 from constants import GRID_SIZE
 from objects.coordinate import Coord
-from utils.calculate_stuff import map_to_area_index, get_coord_by_area_index
+from utils.tools import map_to_area_index, get_coord_by_area_index
 
 
 class Board:

@@ -1,7 +1,7 @@
 import unittest
 
 from objects.coordinate import Coord
-from utils.calculate_stuff import get_area_by_coord, top_left_corner_coord, map_to_area_index, top_left_index_col, top_left_index_row
+from utils.tools import get_area_by_coord, top_left_corner_coord, map_to_area_index, top_left_index_col, top_left_index_row
 
 
 class TestCalculateStuffFunctions(unittest.TestCase):

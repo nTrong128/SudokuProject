@@ -1,9 +1,9 @@
 import copy
 import random
 
-from constants import GRID_SIZE
+from constants import GRID_SIZE, POPULATION_SIZE, CHILDREN_SIZE, GOOD_SELECTION_RATE, MAX_GENERATION
 from objects.board import Board
-from utils.calculate_stuff import get_coord_by_area_index, top_left_corner_coord, invert_weight_list
+from utils.tools import get_coord_by_area_index, top_left_corner_coord, invert_weight_list
 from utils.graph import draw_graph_scores
 
 
@@ -154,23 +154,33 @@ def mutate_individual(sudoku_board: Board):
     mutate_area(sudoku_board, area_to_mutate[0])
 
 
-def sudoku_GA(sudoku_board: Board, population_size: int, children_size: int, selection_rate: float, max_generation: int,
-              draw_graph: bool) -> None:
+def sudoku_GA(
+        sudoku_board: Board,
+        population_size: int = POPULATION_SIZE,
+        children_size: int = CHILDREN_SIZE,
+        selection_rate: int = GOOD_SELECTION_RATE,
+        max_generation: int = MAX_GENERATION,
+        draw_graph: bool = True
+) -> None:
     to_restart = 15
-    max_evaluation_list = []
-    min_evaluation_list = []
     restart_time = 0
-    population: list[Board] = create_population(sudoku_board, population_size)
     non_evolution_gen = 0
     previous_min_evaluation = 0
     loop_count = 0
+
+    population: list[Board] = create_population(sudoku_board, population_size)
+    max_evaluation_list = []
+    min_evaluation_list = []
+
     while loop_count < max_generation:
         population = create_children(population, children_size, selection_rate)
         print("Generation :", loop_count + 1)
         print("Number of individuals: ", len(population))
         min_evaluation = min(population, key=lambda x: x.fitness_evaluation)
+
         if loop_count == 0:
             previous_min_evaluation = min_evaluation.fitness_evaluation
+
         if min_evaluation.fitness_evaluation >= previous_min_evaluation:
             non_evolution_gen += 1
         else:
@@ -184,15 +194,19 @@ def sudoku_GA(sudoku_board: Board, population_size: int, children_size: int, sel
 
         print("Min evaluation: ", min_evaluation.fitness_evaluation)
         min_evaluation_list.append(min_evaluation.fitness_evaluation)
+
         loop_count += 1
+
         if min_evaluation.fitness_evaluation == 0:
             print("\n\nRESTART TIME: ", restart_time)
             print("SOLUTION FOUND: ")
             min_evaluation.print_matrix()
             break
+
         if restart_time > 10:
             print("No solution found after 10 restarts")
             break
+
         if non_evolution_gen >= to_restart:
             print("No solution found at generation:", loop_count, ". Restart process.")
             loop_count = 0
