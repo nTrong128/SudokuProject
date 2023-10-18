@@ -7,13 +7,13 @@ from utils.tools import get_coord_by_area_index, top_left_corner_coord, invert_w
 from utils.graph import draw_graph_scores
 
 
-def fill_areas(sudoku_Board: Board) -> None:
+def fill_areas(sudoku_board: Board) -> None:
     for area in range(GRID_SIZE):
-        number = [x for x in range(1, GRID_SIZE + 1) if x not in sudoku_Board.areas[area]]
+        number = [x for x in range(1, GRID_SIZE + 1) if x not in sudoku_board.areas[area]]
         for cell in range(GRID_SIZE):
-            if sudoku_Board.areas[area][cell] == 0:
+            if sudoku_board.areas[area][cell] == 0:
                 value = random.choice(number)
-                sudoku_Board.areas[area][cell] = value
+                sudoku_board.areas[area][cell] = value
                 number.remove(value)
 
 
