@@ -3,7 +3,7 @@ import random
 
 from constants import GRID_SIZE, POPULATION_SIZE, CHILDREN_SIZE, GOOD_SELECTION_RATE, MAX_GENERATION
 from objects.board import Board
-from utils.tools import get_coord_by_area_index, top_left_corner_coord, invert_weight_list
+from utils.tools import get_coord_by_area_index, top_left_corner_coord, invert_weight_list, calculate_weights
 from utils.graph import draw_graph_scores
 
 
@@ -77,16 +77,15 @@ def create_child(father_board: Board, mother_board: Board, mutation: bool = Fals
 def create_children(population: list[Board], children_size: int, selection_rate):
     number_of_parents = len(population) // 2
 
-    unvisited_parent = []
-    unvisited_parent_weight = []
+    unvisited_parent = [x for x in range(len(population))]
+
+    unvisited_parent_weight = calculate_weights(
+        iterable_list=unvisited_parent,
+        func=lambda index: population[index].fitness_evaluation,
+        invert=True
+    )
 
     new_population = []
-
-    for x in range(len(population)):
-        unvisited_parent.append(x)
-        unvisited_parent_weight.append(population[x].fitness_evaluation)
-
-    unvisited_parent_weight = invert_weight_list(unvisited_parent_weight)
 
     while number_of_parents > 0:
         father_index: int = 0
@@ -128,7 +127,10 @@ def mutate_area(sudoku_board: Board, area: int) -> bool:
     if len(available_indices_to_swap) == 0 or len(available_indices_to_swap) == 1:
         return False
 
-    weights = [sudoku_board.calculate_duplicates_by_coord(elem[1]) for elem in available_indices_to_swap]
+    weights = calculate_weights(
+        iterable_list=available_indices_to_swap,
+        func=lambda indices: sudoku_board.calculate_duplicates_by_coord(indices[1]),
+    )
 
     pair_to_swap = random.choices(available_indices_to_swap, weights=weights, k=2)
 
@@ -147,11 +149,15 @@ def mutate_area(sudoku_board: Board, area: int) -> bool:
 
 def mutate_individual(sudoku_board: Board):
     area_to_choose = list(range(9))
-    area_scores = [sudoku_board.area_ranking(area) for area in range(GRID_SIZE)]
 
-    area_to_mutate = random.choices(area_to_choose, weights=area_scores, k=1)
+    area_weights = calculate_weights(
+        iterable_list=area_to_choose,
+        func=lambda area: sudoku_board.area_ranking(area),
+    )
 
-    mutate_area(sudoku_board, area_to_mutate[0])
+    area_to_mutate = random.choices(area_to_choose, weights=area_weights, k=1)[0]
+
+    mutate_area(sudoku_board, area_to_mutate)
 
 
 def sudoku_GA(
