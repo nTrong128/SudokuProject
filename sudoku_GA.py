@@ -110,8 +110,15 @@ def sort_population(population: list[Board]) -> list[Board]:
 
 def natural_selection(population: list[Board], selection_rate) -> list[Board]:
     population = sort_population(population)
-    good_population = population[:int(len(population) * selection_rate)]
-    population = copy.deepcopy(good_population)
+    partition = int(len(population)*selection_rate/2 )
+    good_population = population[:partition]
+    random_population = population[partition:]
+    random_weights = []
+    for x in range(len(random_population)):
+        random_weights.append(random_population[x].fitness_evaluation)
+    invert_weight_list(random_weights)
+    random_population = random.choices(population[partition:], random_weights, k = partition)
+    population = copy.deepcopy(good_population) + copy.deepcopy(random_population)
     random.shuffle(population)
     return population
 
