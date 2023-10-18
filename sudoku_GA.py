@@ -43,6 +43,8 @@ def map_area_values_to_rows_cols(sudoku_board: Board, area: int) -> None:
     update_rows_by_area(sudoku_board, area)
     update_cols_by_area(sudoku_board, area)
 
+    sudoku_board.update_fitness()
+
 
 def update_board_by_areas(sudoku_board: Board):
     for area in range(GRID_SIZE):
@@ -67,10 +69,7 @@ def create_child(father_board: Board, mother_board: Board, mutation: bool = Fals
         child_board.areas[j] = copy.deepcopy(random.choice([father_board.areas[j], mother_board.areas[j]]))
     if mutation:
         mutate_individual(child_board)
-        update_board_by_areas(child_board)
 
-    if child_board.fitness_evaluation == 2:
-        mutate_individual(child_board)
     return child_board
 
 
@@ -139,6 +138,7 @@ def mutate_area(sudoku_board: Board, area: int) -> bool:
 
     coord_1 = pair_to_swap[0][1]
     coord_2 = pair_to_swap[1][1]
+
     if coord_1.col != coord_2.col or coord_1.row != coord_2.row:
         area_values[index_1], area_values[index_2] = area_values[index_2], area_values[index_1]
     else:
@@ -158,6 +158,8 @@ def mutate_individual(sudoku_board: Board):
     area_to_mutate = random.choices(area_to_choose, weights=area_weights, k=1)[0]
 
     mutate_area(sudoku_board, area_to_mutate)
+
+    map_area_values_to_rows_cols(sudoku_board, area_to_mutate)
 
 
 def sudoku_GA(

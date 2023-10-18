@@ -73,7 +73,7 @@ class Board:
     def calculate_duplicates_by_coord(self, coord: Coord):
         coord_value = self.get_value_by_coord(coord)
 
-        count_duplicates = self.rows[coord.row].count(coord_value) + self.cols[coord.col].count(coord_value)
+        count_duplicates = self.rows[coord.row].count(coord_value) - 1 + self.cols[coord.col].count(coord_value) - 1
         return count_duplicates
 
     def area_ranking(self, area: int):
