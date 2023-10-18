@@ -70,6 +70,8 @@ def create_child(father_board: Board, mother_board: Board, mutation: bool = Fals
     if mutation:
         mutate_individual(child_board)
 
+    update_board_by_areas(child_board)
+
     return child_board
 
 
@@ -95,7 +97,6 @@ def create_children(population: list[Board], children_size: int, selection_rate)
 
         for i in range(children_size):
             child_board = create_child(population[father_index], population[mother_index], True)
-            update_board_by_areas(child_board)
             new_population.append(child_board)
         number_of_parents -= 1
 
