@@ -158,6 +158,9 @@ def mutate_individual(sudoku_board: Board):
 
     area_to_mutate = random.choices(area_to_choose, weights=area_weights, k=1)[0]
 
+    # if set(area_weights) == {0, 1, 2} or set(area_weights) == {0, 1, 2, 4}:
+    #     area_to_mutate = area_to_choose.index(max(area_weights))
+
     mutate_area(sudoku_board, area_to_mutate)
 
     map_area_values_to_rows_cols(sudoku_board, area_to_mutate)

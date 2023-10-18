@@ -1,3 +1,4 @@
+from constants import WEIGHT_MULTIPLIER
 from objects.coordinate import Coord
 
 
@@ -30,7 +31,7 @@ def get_coord_by_area_index(area: int, area_index: int) -> Coord:
 
 
 def calculate_weights(iterable_list: list, func, invert=False):
-    res = [func(element) for element in iterable_list]
+    res = [func(element) * WEIGHT_MULTIPLIER for element in iterable_list]
     if invert:
         return invert_weight_list(res)
     return res

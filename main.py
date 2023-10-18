@@ -12,3 +12,7 @@ if __name__ == "__main__":
 
     end_time = time.time()
     print("RUN TIME: ", round((end_time - start_time), 4), "seconds")
+    # sudoku_board.update_fitness()
+    # sudoku_board.print_matrix()
+    # mutate_individual(sudoku_board)
+    # sudoku_board.print_matrix()
