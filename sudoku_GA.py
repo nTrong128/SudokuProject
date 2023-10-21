@@ -57,6 +57,7 @@ def create_population(input_board: Board, population_size: int) -> list[Board]:
     for i in range(population_size):
         board = Board()
         board.areas = copy.deepcopy(input_board.areas)
+        board.fixed_values = input_board.fixed_values
         fill_areas(board)
         update_board_by_areas(board)
         population.append(board)
@@ -71,6 +72,8 @@ def create_child(father_board: Board, mother_board: Board, mutation: bool = Fals
         mutate_individual(child_board)
 
     update_board_by_areas(child_board)
+
+    child_board.fixed_values = father_board.fixed_values
 
     return child_board
 
@@ -136,14 +139,11 @@ def mutate_area(sudoku_board: Board, area: int) -> bool:
 
     index_1 = pair_to_swap[0][0]
     index_2 = pair_to_swap[1][0]
+    #
+    # coord_1 = pair_to_swap[0][1]
+    # coord_2 = pair_to_swap[1][1]
 
-    coord_1 = pair_to_swap[0][1]
-    coord_2 = pair_to_swap[1][1]
-
-    if coord_1.col != coord_2.col or coord_1.row != coord_2.row:
-        area_values[index_1], area_values[index_2] = area_values[index_2], area_values[index_1]
-    else:
-        return False
+    area_values[index_1], area_values[index_2] = area_values[index_2], area_values[index_1]
 
     return True
 
@@ -158,8 +158,8 @@ def mutate_individual(sudoku_board: Board):
 
     area_to_mutate = random.choices(area_to_choose, weights=area_weights, k=1)[0]
 
-    # if set(area_weights) == {0, 1, 2} or set(area_weights) == {0, 1, 2, 4}:
-    #     area_to_mutate = area_to_choose.index(max(area_weights))
+    if set(area_weights) == {0, 1, 2} or set(area_weights) == {0, 1, 2, 4}:
+        area_to_mutate = area_to_choose.index(max(area_weights))
 
     mutate_area(sudoku_board, area_to_mutate)
 
@@ -174,7 +174,7 @@ def sudoku_GA(
         max_generation: int = MAX_GENERATION,
         draw_graph: bool = True
 ) -> None:
-    to_restart = 15
+    to_restart = 1000
     restart_time = 0
     non_evolution_gen = 0
     previous_min_evaluation = 0
@@ -212,7 +212,7 @@ def sudoku_GA(
         if min_evaluation.fitness_evaluation == 0:
             print("\n\nRESTART TIME: ", restart_time)
             print("SOLUTION FOUND: ")
-            min_evaluation.print_matrix()
+            min_evaluation.print()
             break
 
         if restart_time > 10:

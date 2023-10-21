@@ -31,7 +31,7 @@ def get_coord_by_area_index(area: int, area_index: int) -> Coord:
 
 
 def calculate_weights(iterable_list: list, func, invert=False):
-    res = [func(element) * WEIGHT_MULTIPLIER for element in iterable_list]
+    res = [func(element) for element in iterable_list]
     if invert:
         return invert_weight_list(res)
     return res
@@ -39,4 +39,4 @@ def calculate_weights(iterable_list: list, func, invert=False):
 
 def invert_weight_list(weights: list) -> list:
     max_weight = max(weights)
-    return [max_weight - weight for weight in weights]
+    return [max_weight - weight + 1 for weight in weights]
