@@ -55,6 +55,7 @@ def create_population(input_board: Board, population_size: int) -> list[Board]:
     for i in range(population_size):
         board = Board()
         board.areas = copy.deepcopy(input_board.areas)
+        board.fixed_values = input_board.fixed_values
         fill_areas(board)
         update_board_by_areas(board)
         population.append(board)
@@ -65,6 +66,8 @@ def create_child(father_board: Board, mother_board: Board, mutation: bool = Fals
     child_board = Board()
     for j in range(GRID_SIZE):
         child_board.areas[j] = copy.deepcopy(random.choice([father_board.areas[j], mother_board.areas[j]]))
+
+    child_board.fixed_values = father_board.fixed_values
     if mutation:
         mutate_individual(child_board)
         update_board_by_areas(child_board)
