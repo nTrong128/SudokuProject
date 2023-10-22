@@ -110,10 +110,16 @@ def create_children(population: list[Board], children_size: int, selection_rate)
 def sort_population(population: list[Board]) -> list[Board]:
     return sorted(population, key=lambda x: x.fitness_evaluation, reverse=False)
 
-
 def natural_selection(population: list[Board], selection_rate) -> list[Board]:
     population = sort_population(population)
-    partition = int(len(population)*selection_rate/2 )
+    good_population = population[:int(len(population) * selection_rate)]
+    population = copy.deepcopy(good_population)
+    random.shuffle(population)
+    return population
+
+def natural_selection_with_random(population: list[Board], selection_rate) -> list[Board]:
+    population = sort_population(population)
+    partition = int(len(population)*selection_rate/2)
     good_population = population[:partition]
     random_population = population[partition:]
     random_weights = []
