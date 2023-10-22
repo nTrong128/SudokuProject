@@ -1,19 +1,19 @@
 import copy
 import random
 
-from constants import GRID_SIZE
+from constants import GRID_SIZE, POPULATION_SIZE, CHILDREN_SIZE, SELECTION_RATE, MAX_GENERATION
 from objects.board import Board
-from utils.calculate_stuff import get_coord_by_area_index, top_left_corner_coord, invert_weight_list
+from utils.tools import get_coord_by_area_index, top_left_corner_coord, invert_weight_list, calculate_weights
 from utils.graph import draw_graph_scores
 
 
-def fill_areas(sudoku_Board: Board) -> None:
+def fill_areas(sudoku_board: Board) -> None:
     for area in range(GRID_SIZE):
-        number = [x for x in range(1, GRID_SIZE + 1) if x not in sudoku_Board.areas[area]]
+        number = [x for x in range(1, GRID_SIZE + 1) if x not in sudoku_board.areas[area]]
         for cell in range(GRID_SIZE):
-            if sudoku_Board.areas[area][cell] == 0:
+            if sudoku_board.areas[area][cell] == 0:
                 value = random.choice(number)
-                sudoku_Board.areas[area][cell] = value
+                sudoku_board.areas[area][cell] = value
                 number.remove(value)
 
 
@@ -43,6 +43,8 @@ def map_area_values_to_rows_cols(sudoku_board: Board, area: int) -> None:
     update_rows_by_area(sudoku_board, area)
     update_cols_by_area(sudoku_board, area)
 
+    sudoku_board.update_fitness()
+
 
 def update_board_by_areas(sudoku_board: Board):
     for area in range(GRID_SIZE):
@@ -70,26 +72,26 @@ def create_child(father_board: Board, mother_board: Board, mutation: bool = Fals
     child_board.fixed_values = father_board.fixed_values
     if mutation:
         mutate_individual(child_board)
-        update_board_by_areas(child_board)
 
-    if child_board.fitness_evaluation == 2:
-        mutate_individual(child_board)
+    update_board_by_areas(child_board)
+
+    child_board.fixed_values = father_board.fixed_values
+
     return child_board
 
 
 def create_children(population: list[Board], children_size: int, selection_rate):
     number_of_parents = len(population) // 2
 
-    unvisited_parent = []
-    unvisited_parent_weight = []
+    unvisited_parent = [x for x in range(len(population))]
+
+    unvisited_parent_weight = calculate_weights(
+        iterable_list=unvisited_parent,
+        func=lambda index: population[index].fitness_evaluation,
+        invert=True
+    )
 
     new_population = []
-
-    for x in range(len(population)):
-        unvisited_parent.append(x)
-        unvisited_parent_weight.append(population[x].fitness_evaluation)
-
-    unvisited_parent_weight = invert_weight_list(unvisited_parent_weight)
 
     while number_of_parents > 0:
         father_index: int = 0
@@ -100,7 +102,6 @@ def create_children(population: list[Board], children_size: int, selection_rate)
 
         for i in range(children_size):
             child_board = create_child(population[father_index], population[mother_index], True)
-            update_board_by_areas(child_board)
             new_population.append(child_board)
         number_of_parents -= 1
 
@@ -144,49 +145,69 @@ def mutate_area(sudoku_board: Board, area: int) -> bool:
     if len(available_indices_to_swap) == 0 or len(available_indices_to_swap) == 1:
         return False
 
-    weights = [sudoku_board.calculate_duplicates_by_coord(elem[1]) for elem in available_indices_to_swap]
+    weights = calculate_weights(
+        iterable_list=available_indices_to_swap,
+        func=lambda indices: sudoku_board.calculate_duplicates_by_coord(indices[1]),
+    )
 
     pair_to_swap = random.choices(available_indices_to_swap, weights=weights, k=2)
 
     index_1 = pair_to_swap[0][0]
     index_2 = pair_to_swap[1][0]
+    #
+    # coord_1 = pair_to_swap[0][1]
+    # coord_2 = pair_to_swap[1][1]
 
-    coord_1 = pair_to_swap[0][1]
-    coord_2 = pair_to_swap[1][1]
-    if coord_1.col != coord_2.col or coord_1.row != coord_2.row:
-        area_values[index_1], area_values[index_2] = area_values[index_2], area_values[index_1]
-    else:
-        return False
+    area_values[index_1], area_values[index_2] = area_values[index_2], area_values[index_1]
 
     return True
 
 
 def mutate_individual(sudoku_board: Board):
     area_to_choose = list(range(9))
-    area_scores = [sudoku_board.area_ranking(area) for area in range(GRID_SIZE)]
 
-    area_to_mutate = random.choices(area_to_choose, weights=area_scores, k=1)
+    area_weights = calculate_weights(
+        iterable_list=area_to_choose,
+        func=lambda area: sudoku_board.area_ranking(area),
+    )
 
-    mutate_area(sudoku_board, area_to_mutate[0])
+    area_to_mutate = random.choices(area_to_choose, weights=area_weights, k=1)[0]
+
+    if set(area_weights) == {0, 1, 2} or set(area_weights) == {0, 1, 2, 4}:
+        area_to_mutate = area_to_choose.index(max(area_weights))
+
+    mutate_area(sudoku_board, area_to_mutate)
+
+    map_area_values_to_rows_cols(sudoku_board, area_to_mutate)
 
 
-def sudoku_GA(sudoku_board: Board, population_size: int, children_size: int, selection_rate: float, max_generation: int,
-              draw_graph: bool) -> None:
-    to_restart = 15
-    max_evaluation_list = []
-    min_evaluation_list = []
+def sudoku_GA(
+        sudoku_board: Board,
+        population_size: int = POPULATION_SIZE,
+        children_size: int = CHILDREN_SIZE,
+        selection_rate: int = SELECTION_RATE,
+        max_generation: int = MAX_GENERATION,
+        draw_graph: bool = True
+) -> None:
+    to_restart = 1000
     restart_time = 0
-    population: list[Board] = create_population(sudoku_board, population_size)
     non_evolution_gen = 0
     previous_min_evaluation = 0
     loop_count = 0
+
+    population: list[Board] = create_population(sudoku_board, population_size)
+    max_evaluation_list = []
+    min_evaluation_list = []
+
     while loop_count < max_generation:
         population = create_children(population, children_size, selection_rate)
         print("Generation :", loop_count + 1)
         print("Number of individuals: ", len(population))
         min_evaluation = min(population, key=lambda x: x.fitness_evaluation)
+
         if loop_count == 0:
             previous_min_evaluation = min_evaluation.fitness_evaluation
+
         if min_evaluation.fitness_evaluation >= previous_min_evaluation:
             non_evolution_gen += 1
         else:
@@ -200,15 +221,19 @@ def sudoku_GA(sudoku_board: Board, population_size: int, children_size: int, sel
 
         print("Min evaluation: ", min_evaluation.fitness_evaluation)
         min_evaluation_list.append(min_evaluation.fitness_evaluation)
+
         loop_count += 1
+
         if min_evaluation.fitness_evaluation == 0:
             print("\n\nRESTART TIME: ", restart_time)
             print("SOLUTION FOUND: ")
-            min_evaluation.print_matrix()
+            min_evaluation.print()
             break
+
         if restart_time > 10:
             print("No solution found after 10 restarts")
             break
+
         if non_evolution_gen >= to_restart:
             print("No solution found at generation:", loop_count, ". Restart process.")
             loop_count = 0
