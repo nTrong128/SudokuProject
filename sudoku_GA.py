@@ -55,6 +55,7 @@ def create_population(input_board: Board, population_size: int) -> list[Board]:
     for i in range(population_size):
         board = Board()
         board.areas = copy.deepcopy(input_board.areas)
+        board.fixed_values = input_board.fixed_values
         fill_areas(board)
         update_board_by_areas(board)
         population.append(board)
@@ -65,6 +66,8 @@ def create_child(father_board: Board, mother_board: Board, mutation: bool = Fals
     child_board = Board()
     for j in range(GRID_SIZE):
         child_board.areas[j] = copy.deepcopy(random.choice([father_board.areas[j], mother_board.areas[j]]))
+
+    child_board.fixed_values = father_board.fixed_values
     if mutation:
         mutate_individual(child_board)
         update_board_by_areas(child_board)
@@ -107,11 +110,24 @@ def create_children(population: list[Board], children_size: int, selection_rate)
 def sort_population(population: list[Board]) -> list[Board]:
     return sorted(population, key=lambda x: x.fitness_evaluation, reverse=False)
 
-
 def natural_selection(population: list[Board], selection_rate) -> list[Board]:
     population = sort_population(population)
     good_population = population[:int(len(population) * selection_rate)]
     population = copy.deepcopy(good_population)
+    random.shuffle(population)
+    return population
+
+def natural_selection_with_random(population: list[Board], selection_rate) -> list[Board]:
+    population = sort_population(population)
+    partition = int(len(population)*selection_rate/2)
+    good_population = population[:partition]
+    random_population = population[partition:]
+    random_weights = []
+    for x in range(len(random_population)):
+        random_weights.append(random_population[x].fitness_evaluation)
+    invert_weight_list(random_weights)
+    random_population = random.choices(population[partition:], random_weights, k = partition)
+    population = copy.deepcopy(good_population) + copy.deepcopy(random_population)
     random.shuffle(population)
     return population
 
