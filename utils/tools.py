@@ -39,4 +39,4 @@ def calculate_weights(iterable_list: list, func, invert=False):
 
 def invert_weight_list(weights: list) -> list:
     max_weight = max(weights)
-    return [max_weight - weight + 1 for weight in weights]
+    return [max_weight - weight for weight in weights]
