@@ -22,7 +22,7 @@ class Board:
         self.fitness_evaluation = 0
         self.fixed_values: Dict[Coord, int] = {}
 
-    def print(self):
+    def print_debugging_info(self):
         print("Rows: ")
         for row in self.rows:
             print(f'{row}: {self.rows[row]}')
@@ -36,12 +36,12 @@ class Board:
         for coord in self.fixed_values:
             print(f'{coord}: {self.fixed_values[coord]}')
 
-    def print_area(self):
+    def print_areas(self):
         print("Areas: ")
         for area in self.areas:
             print(f'{area}: {self.areas[area]}')
 
-    def print_matrix(self):
+    def display(self):
         for row in range(GRID_SIZE):
             for cell in range(GRID_SIZE):
                 print(f'{self.rows[row][cell]}', end=' ')
@@ -56,6 +56,7 @@ class Board:
     def add_value_by_coord(self, coord: Coord, value: int):
         self.rows[coord.row][coord.col] = value
         self.cols[coord.col][coord.row] = value
+
         area_index, value_index = map_to_area_index(coord)
         self.areas[area_index][value_index] = value
         self.fixed_values[coord] = value

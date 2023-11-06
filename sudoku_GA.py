@@ -1,9 +1,9 @@
 import copy
 import random
 
-from constants import GRID_SIZE, POPULATION_SIZE, CHILDREN_SIZE, SELECTION_RATE, MAX_GENERATION
+from constants import GRID_SIZE, POPULATION_SIZE, CHILDREN_SIZE, SELECTION_RATE, MAX_GENERATION, TO_RESTART
 from objects.board import Board
-from utils.tools import get_coord_by_area_index, top_left_corner_coord, invert_weight_list, calculate_weights
+from utils.tools import get_coord_by_area_index, top_left_corner_coord, calculate_weights
 from utils.graph import draw_graph_scores
 
 
@@ -49,7 +49,6 @@ def map_area_values_to_rows_cols(sudoku_board: Board, area: int) -> None:
 def update_board_by_areas(sudoku_board: Board):
     for area in range(GRID_SIZE):
         map_area_values_to_rows_cols(sudoku_board, area)
-    sudoku_board.update_fitness()
 
 
 def create_population(input_board: Board, population_size: int) -> list[Board]:
@@ -64,12 +63,17 @@ def create_population(input_board: Board, population_size: int) -> list[Board]:
     return population
 
 
-def create_child(father_board: Board, mother_board: Board, mutation: bool = False) -> Board:
+def create_child(
+        father_board: Board,
+        mother_board: Board,
+        mutation: bool = False
+) -> Board:
     child_board = Board()
     for j in range(GRID_SIZE):
         child_board.areas[j] = copy.deepcopy(random.choice([father_board.areas[j], mother_board.areas[j]]))
 
     child_board.fixed_values = father_board.fixed_values
+
     if mutation:
         mutate_individual(child_board)
 
@@ -80,7 +84,11 @@ def create_child(father_board: Board, mother_board: Board, mutation: bool = Fals
     return child_board
 
 
-def create_children(population: list[Board], children_size: int, selection_rate):
+def create_children(
+        population: list[Board],
+        children_size: int,
+        selection_rate: float
+) -> list[Board]:
     number_of_parents = len(population) // 2
 
     unvisited_parent = [x for x in range(len(population))]
@@ -111,6 +119,7 @@ def create_children(population: list[Board], children_size: int, selection_rate)
 def sort_population(population: list[Board]) -> list[Board]:
     return sorted(population, key=lambda x: x.fitness_evaluation, reverse=False)
 
+
 def natural_selection(population: list[Board], selection_rate) -> list[Board]:
     population = sort_population(population)
     good_population = population[:int(len(population) * selection_rate)]
@@ -118,16 +127,26 @@ def natural_selection(population: list[Board], selection_rate) -> list[Board]:
     random.shuffle(population)
     return population
 
+
 def natural_selection_with_random(population: list[Board], selection_rate) -> list[Board]:
     population = sort_population(population)
-    partition = int(len(population)*selection_rate/2)
+    partition = int(len(population) * selection_rate / 2)
+
     good_population = population[:partition]
-    random_population = population[partition:]
-    random_weights = []
-    for x in range(len(random_population)):
-        random_weights.append(random_population[x].fitness_evaluation)
-    invert_weight_list(random_weights)
-    random_population = random.choices(population[partition:], random_weights, k = partition)
+    remaining_population = population[partition:]
+
+    # random_weights = []
+    # for x in range(len(random_population)):
+    #     random_weights.append(random_population[x].fitness_evaluation)
+    # invert_weight_list(random_weights)
+
+    remaining_weights = calculate_weights(
+        iterable_list=remaining_population,
+        func=lambda x: x.fitness_evaluation,
+        invert=True
+    )
+
+    random_population = random.choices(remaining_population, remaining_weights, k=partition)
     population = copy.deepcopy(good_population) + copy.deepcopy(random_population)
     random.shuffle(population)
     return population
@@ -154,9 +173,6 @@ def mutate_area(sudoku_board: Board, area: int) -> bool:
 
     index_1 = pair_to_swap[0][0]
     index_2 = pair_to_swap[1][0]
-    #
-    # coord_1 = pair_to_swap[0][1]
-    # coord_2 = pair_to_swap[1][1]
 
     area_values[index_1], area_values[index_2] = area_values[index_2], area_values[index_1]
 
@@ -169,14 +185,10 @@ def mutate_individual(sudoku_board: Board):
     area_weights = calculate_weights(
         iterable_list=area_to_choose,
         func=lambda area: sudoku_board.area_ranking(area),
+        excluding_weights=[0, 1]
     )
 
-    area_weights = [0 if weight == 1 else weight for weight in area_weights]
-
     area_to_mutate = random.choices(area_to_choose, weights=area_weights, k=1)[0]
-
-    # if set(area_weights) == {0, 2} or set(area_weights) == {0, 2, 4}:
-    #     area_to_mutate = area_to_choose.index(max(area_weights))
 
     mutate_area(sudoku_board, area_to_mutate)
 
@@ -189,9 +201,9 @@ def sudoku_GA(
         children_size: int = CHILDREN_SIZE,
         selection_rate: int = SELECTION_RATE,
         max_generation: int = MAX_GENERATION,
+        to_restart: int = TO_RESTART,
         draw_graph: bool = True
 ) -> None:
-    to_restart = 1000
     restart_time = 0
     non_evolution_gen = 0
     previous_min_evaluation = 0
@@ -229,7 +241,7 @@ def sudoku_GA(
         if min_evaluation.fitness_evaluation == 0:
             print("\n\nRESTART TIME: ", restart_time)
             print("SOLUTION FOUND: ")
-            min_evaluation.print()
+            min_evaluation.print_debugging_info()
             break
 
         if restart_time > 10:
