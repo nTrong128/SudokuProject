@@ -1,9 +1,9 @@
 from typing import Dict
-
+import random
 from constants import GRID_SIZE
 from objects.coordinate import Coord
 from utils.tools import map_to_area_index, get_coord_by_area_index
-
+from utils.tools import get_coord_by_area_index, top_left_corner_coord, calculate_weights
 
 class Board:
     def __init__(self, rows=None, cols=None, areas=None, fixed_value=None):
@@ -82,3 +82,42 @@ class Board:
         coords = [get_coord_by_area_index(area, area_index) for area_index in range(len(area_values))]
 
         return sum([self.calculate_duplicates_by_coord(coord) for coord in coords])
+
+    def fill_areas(self) -> None:
+        for area in range(GRID_SIZE):
+            number = [x for x in range(1, GRID_SIZE + 1) if x not in self.areas[area]]
+            for cell in range(GRID_SIZE):
+                if self.areas[area][cell] == 0:
+                    value = random.choice(number)
+                    self.areas[area][cell] = value
+                    number.remove(value)
+
+    def update_cols_by_area(self, area: int):
+        top_left_coord = top_left_corner_coord(area)
+
+        base_counter = 0
+        for col in range(top_left_coord.col, top_left_coord.col + 3):
+            counter = base_counter
+            for row in range(top_left_coord.row, top_left_coord.row + 3):
+                self.cols[col][row] = self.areas[area][counter]
+                counter += 3
+            base_counter += 1
+
+    def update_rows_by_area(self, area: int) -> None:
+        top_left_index_Col = area * 3 // GRID_SIZE * 3
+        top_left_index_Row = area * 3 % GRID_SIZE
+        counter = 0
+        for i in range(top_left_index_Col, top_left_index_Col + 3):
+            for j in range(top_left_index_Row, top_left_index_Row + 3):
+                self.rows[i][j] = self.areas[area][counter]
+                counter += 1
+
+    def map_area_values_to_rows_cols(self, area: int) -> None:
+        self.update_rows_by_area(area)
+        self.update_cols_by_area(area)
+
+        self.update_fitness()
+
+    def update_board_by_areas(self):
+        for area in range(GRID_SIZE):
+            self.map_area_values_to_rows_cols( area)
