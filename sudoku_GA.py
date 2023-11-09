@@ -7,48 +7,7 @@ from utils.tools import get_coord_by_area_index, top_left_corner_coord, calculat
 from utils.graph import draw_graph_scores
 
 
-def fill_areas(sudoku_board: Board) -> None:
-    for area in range(GRID_SIZE):
-        number = [x for x in range(1, GRID_SIZE + 1) if x not in sudoku_board.areas[area]]
-        for cell in range(GRID_SIZE):
-            if sudoku_board.areas[area][cell] == 0:
-                value = random.choice(number)
-                sudoku_board.areas[area][cell] = value
-                number.remove(value)
 
-
-def update_cols_by_area(sudoku_board: Board, area: int):
-    top_left_coord = top_left_corner_coord(area)
-
-    base_counter = 0
-    for col in range(top_left_coord.col, top_left_coord.col + 3):
-        counter = base_counter
-        for row in range(top_left_coord.row, top_left_coord.row + 3):
-            sudoku_board.cols[col][row] = sudoku_board.areas[area][counter]
-            counter += 3
-        base_counter += 1
-
-
-def update_rows_by_area(sudoku_board: Board, area: int) -> None:
-    top_left_index_Col = area * 3 // GRID_SIZE * 3
-    top_left_index_Row = area * 3 % GRID_SIZE
-    counter = 0
-    for i in range(top_left_index_Col, top_left_index_Col + 3):
-        for j in range(top_left_index_Row, top_left_index_Row + 3):
-            sudoku_board.rows[i][j] = sudoku_board.areas[area][counter]
-            counter += 1
-
-
-def map_area_values_to_rows_cols(sudoku_board: Board, area: int) -> None:
-    update_rows_by_area(sudoku_board, area)
-    update_cols_by_area(sudoku_board, area)
-
-    sudoku_board.update_fitness()
-
-
-def update_board_by_areas(sudoku_board: Board):
-    for area in range(GRID_SIZE):
-        map_area_values_to_rows_cols(sudoku_board, area)
 
 
 def create_population(input_board: Board, population_size: int) -> list[Board]:
@@ -57,8 +16,8 @@ def create_population(input_board: Board, population_size: int) -> list[Board]:
         board = Board()
         board.areas = copy.deepcopy(input_board.areas)
         board.fixed_values = input_board.fixed_values
-        fill_areas(board)
-        update_board_by_areas(board)
+        board.fill_areas()
+        board.update_board_by_areas()
         population.append(board)
     return population
 
@@ -77,7 +36,7 @@ def create_child(
     if mutation:
         mutate_individual(child_board)
 
-    update_board_by_areas(child_board)
+    child_board.update_board_by_areas()
 
     child_board.fixed_values = father_board.fixed_values
 
@@ -192,7 +151,7 @@ def mutate_individual(sudoku_board: Board):
 
     mutate_area(sudoku_board, area_to_mutate)
 
-    map_area_values_to_rows_cols(sudoku_board, area_to_mutate)
+    sudoku_board.map_area_values_to_rows_cols(area_to_mutate)
 
 
 def sudoku_GA(
@@ -249,6 +208,7 @@ def sudoku_GA(
             break
 
         if non_evolution_gen >= to_restart:
+            min_evaluation.display()
             print("No solution found at generation:", loop_count, ". Restart process.")
             loop_count = 0
             restart_time += 1
