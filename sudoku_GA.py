@@ -200,7 +200,7 @@ def sudoku_GA(
         if min_evaluation.fitness_evaluation == 0:
             print("\n\nRESTART TIME: ", restart_time)
             print("SOLUTION FOUND: ")
-            min_evaluation.print_debugging_info()
+            min_evaluation.display()
             break
 
         if restart_time > 10:
