@@ -7,9 +7,6 @@ from utils.tools import get_coord_by_area_index, top_left_corner_coord, calculat
 from utils.graph import draw_graph_scores
 
 
-
-
-
 def create_population(input_board: Board, population_size: int) -> list[Board]:
     population = []
     for i in range(population_size):
@@ -22,11 +19,7 @@ def create_population(input_board: Board, population_size: int) -> list[Board]:
     return population
 
 
-def create_child(
-        father_board: Board,
-        mother_board: Board,
-        mutation: bool = False
-) -> Board:
+def create_child(father_board: Board, mother_board: Board, mutation: bool = False) -> Board:
     child_board = Board()
     for j in range(GRID_SIZE):
         child_board.areas[j] = copy.deepcopy(random.choice([father_board.areas[j], mother_board.areas[j]]))
@@ -43,17 +36,13 @@ def create_child(
     return child_board
 
 
-def create_children(
-        population: list[Board],
-        children_size: int,
-        selection_rate: float
-) -> list[Board]:
+def create_children(population: list[Board], children_size: int, selection_rate: float) -> list[Board]:
     number_of_parents = len(population) // 2
 
-    unvisited_parent = [x for x in range(len(population))]
+    parent_indices = [x for x in range(len(population))]
 
-    unvisited_parent_weight = calculate_weights(
-        iterable_list=unvisited_parent,
+    parent_weights = calculate_weights(
+        iterable_list=parent_indices,
         func=lambda index: population[index].fitness_evaluation,
         invert=True
     )
@@ -61,12 +50,13 @@ def create_children(
     new_population = []
 
     while number_of_parents > 0:
-        father_index: int = 0
-        mother_index: int = 0
-        while father_index == mother_index:
-            father_index = random.choices(unvisited_parent, weights=unvisited_parent_weight, k=1)[0]
-            mother_index = random.choices(unvisited_parent, weights=unvisited_parent_weight, k=1)[0]
-
+        # father_index: int = 0
+        # mother_index: int = 0
+        # while father_index == mother_index:
+        #     father_index = random.choices(parent_indices, weights=parent_weights, k=1)[0]
+        #     mother_index = random.choices(parent_indices, weights=parent_weights, k=1)[0]
+        parent = random.choices(parent_indices, weights=parent_weights, k=2)
+        father_index, mother_index = parent[0], parent[1]
         for i in range(children_size):
             child_board = create_child(population[father_index], population[mother_index], True)
             new_population.append(child_board)
@@ -94,10 +84,6 @@ def natural_selection_with_random(population: list[Board], selection_rate) -> li
     good_population = population[:partition]
     remaining_population = population[partition:]
 
-    # random_weights = []
-    # for x in range(len(random_population)):
-    #     random_weights.append(random_population[x].fitness_evaluation)
-    # invert_weight_list(random_weights)
 
     remaining_weights = calculate_weights(
         iterable_list=remaining_population,
@@ -126,6 +112,7 @@ def mutate_area(sudoku_board: Board, area: int) -> bool:
     weights = calculate_weights(
         iterable_list=available_indices_to_swap,
         func=lambda indices: sudoku_board.calculate_duplicates_by_coord(indices[1]),
+        default_weight=1
     )
 
     pair_to_swap = random.choices(available_indices_to_swap, weights=weights, k=2)

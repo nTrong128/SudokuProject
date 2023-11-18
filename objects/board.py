@@ -20,8 +20,6 @@ class Board:
             self.fixed_values = fixed_value
 
         self.fitness_evaluation = 0
-        self.fixed_values: Dict[Coord, int] = {}
-
     def print_debugging_info(self):
         print("Rows: ")
         for row in self.rows:
